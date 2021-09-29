@@ -95,7 +95,7 @@ arguments:
         - name: "action_noise_range"
           default: 0.01
         - name: "use_gpu"
-          default: false
+          default: true
         - name: "reward_scale"
           default: 1
         - name: "max_updates_per_episode"
@@ -130,7 +130,7 @@ arguments:
           - name: "replay_buffer_size"
             default: 1000000
           - name: "use_gpu"
-            default: false
+            default: true
   - name: "main"
     help: "Safe-Explorer driver properties."
     properties:

@@ -35,6 +35,8 @@ class SafetyLayer:
     def _as_tensor(self, ndarray, requires_grad=False):
         tensor = torch.Tensor(ndarray)
         tensor.requires_grad = requires_grad
+        if self._config.use_gpu:
+            tensor = tensor.cuda()
         return tensor
 
     def _cuda(self):
@@ -131,7 +133,7 @@ class SafetyLayer:
         self._train_mode()
 
         # Fidn the lagrange multipliers
-        g = [x.data.numpy().reshape(-1) for x in g]
+        g = [x.data.detach().cpu().numpy().reshape(-1) for x in g]
         multipliers = [(np.dot(g_i, action) + c_i) / np.dot(g_i, g_i) for g_i, c_i in zip(g, c)]
         multipliers = [np.clip(x, 0, np.inf) for x in multipliers]
 
@@ -174,7 +176,7 @@ class SafetyLayer:
                     .map(lambda x: (f"constraint_model_{x[1]}", x[0])) # (model_name, model)
                     .flat_map(lambda x: [(x[0], y) for y in x[1].named_parameters()]) # (model_name, (param_name, param_data))
                     .map(lambda x: (f"{x[0]}_{x[1][0]}", x[1][1])) # (modified_param_name, param_data)
-                    .for_each(lambda x: self._writer.add_histogram(x[0], x[1].data.numpy(), self._train_global_step)))
+                    .for_each(lambda x: self._writer.add_histogram(x[0], x[1].data.detach().cpu().numpy(), self._train_global_step)))
 
 
 
