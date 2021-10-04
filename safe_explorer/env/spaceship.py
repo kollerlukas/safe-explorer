@@ -37,10 +37,13 @@ class Spaceship(gym.Env):
 
         return self.step(np.zeros(2))[0]
 
+    def _target_reached(self):
+      return LA.norm(self._agent_position - self._target_position) < self._config.target_radius
+
     def _get_reward(self):
         if self._config.enable_reward_shaping and self._is_agent_outside_shaping_boundary():
             reward = -1000
-        elif LA.norm(self._agent_position - self._target_position) < self._config.target_radius:
+        elif self._target_reached():
             reward = 1000
         else:
             reward = 0
@@ -102,7 +105,10 @@ class Spaceship(gym.Env):
             "target_postion": self._get_noisy_target_position()
         }
 
-        done = self._is_agent_outside_boundary() \
+        done = self._target_reached() \
+               or self._is_agent_outside_boundary() \
                or int(self._current_time // 1) >= self._episode_length
+
+        constraint_violation = self._is_agent_outside_boundary()
         
-        return observation, reward, done, {}
+        return observation, reward, done, {'constraint_violation': constraint_violation}

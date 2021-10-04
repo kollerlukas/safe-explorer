@@ -41,6 +41,9 @@ class DDPG:
         self._writer = TensorBoard.get_writer()
         self._train_global_step = 0
         self._eval_global_step = 0
+        self._eval_global_episode = 0
+
+        self._eval_cumulative_constraint_violations = 0
 
         if self._config.use_gpu:
             self._cuda()
@@ -72,12 +75,12 @@ class DDPG:
     def _get_action(self, observation, c, is_training=True):
         # Action + random gaussian noise (as recommended in spining up)
         action = self._actor(self._as_tensor(self._flatten_dict(observation)))
-        if is_training:
-            if self._config.use_gpu:
-                noise = torch.randn(self._env.action_space.shape).cuda()
-            else:
-                noise = torch.randn(self._env.action_space.shape)
-            action += self._config.action_noise_range * noise
+        # if is_training:
+        #     if self._config.use_gpu:
+        #         noise = torch.randn(self._env.action_space.shape).cuda()
+        #     else:
+        #         noise = torch.randn(self._env.action_space.shape)
+        #     action += self._config.action_noise_range * noise
 
         action = action.detach().cpu().data.numpy()
 
@@ -171,13 +174,18 @@ class DDPG:
         episode_length = 0
         episode_action = 0
 
+        discounted_return = 0
+
         self._eval_mode()
 
         for step in range(self._config.evaluation_steps):
             action = self._get_action(observation, c, is_training=False)
             episode_action += np.absolute(action)
-            observation, reward, done, _ = self._env.step(action)
+
+            observation, reward, done, dict = self._env.step(action)
             c = self._env.get_constraint_values()
+            
+            discounted_return += (self._config.discount_factor ** episode_length) * reward
             episode_reward += reward
             episode_length += 1
             
@@ -185,6 +193,15 @@ class DDPG:
                 episode_rewards.append(episode_reward)
                 episode_lengths.append(episode_length)
                 episode_actions.append(episode_action / episode_length)
+
+                if dict['constraint_violation']:
+                  self._eval_cumulative_constraint_violations += 1
+                print(f"Episode Length: {episode_length}; Episode Reward: {episode_reward}; Discounted Return: {discounted_return}; Cumulative Constraint Violations: {self._eval_cumulative_constraint_violations}")
+
+                self._writer.add_scalar("discounted return", discounted_return, self._eval_global_episode)
+                self._writer.add_scalar("cumulative constraint violations", self._eval_cumulative_constraint_violations, self._eval_global_episode)
+                self._eval_global_episode += 1
+                discounted_return = 0
 
                 observation = self._env.reset()
                 c = self._env.get_constraint_values()
@@ -228,6 +245,14 @@ class DDPG:
             # Randomly sample episode_ for some initial steps
             action = self._env.action_space.sample() if step < self._config.start_steps \
                      else self._get_action(observation, c)
+
+            # if step < self._config.start_steps:
+            #   if self._action_modifier:
+            #     action = self._action_modifier(observation, self._env.action_space.sample(), c)
+            #   else:
+            #     action = self._env.action_space.sample()
+            # else:
+            #   action = self._get_action(observation, c)
             
             observation_next, reward, done, _ = self._env.step(action)
             episode_reward += reward

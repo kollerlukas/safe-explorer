@@ -41,6 +41,7 @@ class Trainer:
 
         env = BallND() if self._config.task == "ballnd" else Spaceship()
 
+        safety_layer = None
         if self._config.use_safety_layer:
             safety_layer = SafetyLayer(env)
             safety_layer.train()

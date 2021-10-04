@@ -26,7 +26,7 @@ arguments:
           - name: "enable_reward_shaping"
             default: false
           - name: "is_arena"
-            default: true
+            default: false
           - name: "reward_shaping_slack"
             default: 0.1
       - name: "ballnd"
@@ -49,7 +49,7 @@ arguments:
           - name: "enable_reward_shaping"
             default: false
           - name: "reward_shaping_slack"
-            default: 0.1          
+            default: 0.14 # 1d: 0.14; 3d: 0.2          
   - name: "ddpg"
     help: "Hyperparameters for DDPG algorithm."
     properties:
@@ -57,21 +57,21 @@ arguments:
       help: "Actor network parameters."
       properties:
         - name: "layers"
-          default: [128, 64]
+          default: [100, 100] # [128, 64]
         - name: "init_bound"
           default: 0.003
     - name: "critic"
       help: "Critic network parameters."
       properties:
         - name: "layers"
-          default: [64, 128, 32]
+          default: [500, 500] # [64, 128, 32]
         - name: "init_bound"
           default: 0.003
     - name: "trainer"
       help: "Training parameters."
       properties:
         - name: "epochs"
-          default: 100
+          default: 20
         - name: "steps_per_epoch"
           default: 6000
         - name: "evaluation_steps"
@@ -87,7 +87,7 @@ arguments:
         - name: "polyak"
           default: 0.995
         - name: "actor_lr"
-          default: 0.001
+          default: 0.0001 # 0.001
         - name: "critic_lr"
           default: 0.001
         - name: "start_steps"
@@ -95,7 +95,7 @@ arguments:
         - name: "action_noise_range"
           default: 0.01
         - name: "use_gpu"
-          default: true
+          default: false
         - name: "reward_scale"
           default: 1
         - name: "max_updates_per_episode"
@@ -109,7 +109,7 @@ arguments:
         help: "Hyperparameters for constraint model (g)"
         properties:
           - name: "layers"
-            default: [10, 10]
+            default: [10] # [10, 10]
           - name: "init_bound"
             default: 0.003
       - name: "trainer"
@@ -130,7 +130,7 @@ arguments:
           - name: "replay_buffer_size"
             default: 1000000
           - name: "use_gpu"
-            default: true
+            default: false
   - name: "main"
     help: "Safe-Explorer driver properties."
     properties:
@@ -140,6 +140,6 @@ arguments:
           - name: "seed"
             default: 0
           - name: "task"
-            default: "ballnd"
+            default: "ballnd" # ballnd; spaceship
           - name: "use_safety_layer"
-            default: true
+            default: false
