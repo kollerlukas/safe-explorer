@@ -11,10 +11,11 @@ class BallND(gym.Env):
         self._config = Config.get().env.ballnd
         # Set the properties for spaces
         self.action_space = Box(low=-1, high=1, shape=(self._config.n,), dtype=np.float32)
-        self.observation_space = Dict({
-            'agent_position': Box(low=0, high=1, shape=(self._config.n,), dtype=np.float32),
-            'target_position': Box(low=0, high=1, shape=(self._config.n,), dtype=np.float32)
-        })
+        # self.observation_space = Dict({
+        #     'agent_position': Box(low=0, high=1, shape=(self._config.n,), dtype=np.float32),
+        #     'target_position': Box(low=0, high=1, shape=(self._config.n,), dtype=np.float32)
+        # })
+        self.observation_space = Box(low=0, high=1, shape=(self._config.n*2,), dtype=np.float32) # ['agent_position','target_position']
 
         # Sets all the episode specific variables
         self.reset()
@@ -29,8 +30,8 @@ class BallND(gym.Env):
         if self._config.enable_reward_shaping and self._is_agent_outside_shaping_boundary():
             return -1
         else:
-            #return np.clip(1 - 10 * LA.norm(self._agent_position - self._target_position) ** 2, 0, 1)
-            return np.clip(1 - 10 * LA.norm(self._agent_position - self._target_position) ** 2, 0, np.inf)
+            return np.clip(1 - 10 * LA.norm(self._agent_position - self._target_position) ** 2, 0, 1)
+            #return np.clip(1 - 10 * LA.norm(self._agent_position - self._target_position) ** 2, 0, np.inf)
     
     def _reset_target_location(self):
         self._target_position = \
@@ -84,17 +85,18 @@ class BallND(gym.Env):
 
         # Find reward         
         reward = self._get_reward()
-        step_reward = reward - last_reward
+        # step_reward = reward - last_reward
 
         # Prepare return payload
-        observation = {
-            "agent_position": self._agent_position,
-            "target_postion": self._get_noisy_target_position()
-        }
+        # observation = {
+        #     "agent_position": self._agent_position,
+        #     "target_postion": self._get_noisy_target_position()
+        # }
+        state = np.concatenate([self._agent_position, self._get_noisy_target_position()])
 
         done = self._is_agent_outside_boundary() \
                or int(self._current_time // 1) > self._config.episode_length
 
         constraint_violation = self._is_agent_outside_boundary()
 
-        return observation, step_reward, done, {'constraint_violation': constraint_violation}
+        return state, reward, done, {'constraint_violation': constraint_violation}

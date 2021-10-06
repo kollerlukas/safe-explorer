@@ -57,45 +57,49 @@ arguments:
       help: "Actor network parameters."
       properties:
         - name: "layers"
-          default: [100, 100] # [128, 64]
-        - name: "init_bound"
-          default: 0.003
+          default: [100, 100]
+        # - name: "init_bound"
+        #   default: 0.003
     - name: "critic"
       help: "Critic network parameters."
       properties:
         - name: "layers"
-          default: [500, 500] # [64, 128, 32]
-        - name: "init_bound"
-          default: 0.003
+          default: [500, 500]
+        # - name: "init_bound"
+        #   default: 0.003
     - name: "trainer"
       help: "Training parameters."
       properties:
         - name: "epochs"
-          default: 20
-        - name: "steps_per_epoch"
-          default: 6000
-        - name: "evaluation_steps"
-          default: 1500
+          default: 20 # 60
+        # - name: "steps_per_epoch"
+        #   default: 6000
+        # - name: "evaluation_steps"
+        #   default: 1500
+        - name: "training_episodes"
+          default: 40
+        - name: "evaluation_episodes"
+          default: 5
         - name: "batch_size"
-          default: 256
+          default: 128 # 256
         - name: "max_episode_length"
           default: 300
         - name: "replay_buffer_size"
-          default: 1000000
+          default: 100000 # 1000000
         - name: "discount_factor"
           default: 0.99
-        - name: "polyak"
-          default: 0.995
+        - name: "tau"
+          default: 0.005
         - name: "actor_lr"
           default: 0.0001 # 0.001
         - name: "critic_lr"
           default: 0.001
-        - name: "start_steps"
-          default: 500
+        # - name: "start_steps"
+        #   default: 500
         - name: "action_noise_range"
           default: 0.01
-        - name: "use_gpu"
-          default: false
+        # - name: "use_gpu"
+        #   default: false
         - name: "reward_scale"
           default: 1
         - name: "max_updates_per_episode"
@@ -128,9 +132,9 @@ arguments:
           - name: "evaluation_steps"
             default: 1500
           - name: "replay_buffer_size"
-            default: 1000000
-          - name: "use_gpu"
-            default: false
+            default: 100000
+          # - name: "use_gpu"
+          #   default: false
   - name: "main"
     help: "Safe-Explorer driver properties."
     properties:

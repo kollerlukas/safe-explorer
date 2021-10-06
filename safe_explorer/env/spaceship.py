@@ -16,11 +16,12 @@ class Spaceship(gym.Env):
             if self._config.is_arena else self._config.corridor_episode_length
         # Set the properties for spaces
         self.action_space = Box(low=-1, high=1, shape=(2,), dtype=np.float32)
-        self.observation_space = Dict({
-            'agent_position': Box(low=0, high=1, shape=(2,), dtype=np.float32),
-            'agent_velocity': Box(low=-np.inf, high=np.inf, shape=(2,), dtype=np.float32),
-            'target_position': Box(low=0, high=1, shape=(2,), dtype=np.float32)
-        })
+        # self.observation_space = Dict({
+        #     'agent_position': Box(low=0, high=1, shape=(2,), dtype=np.float32),
+        #     'agent_velocity': Box(low=-np.inf, high=np.inf, shape=(2,), dtype=np.float32),
+        #     'target_position': Box(low=0, high=1, shape=(2,), dtype=np.float32)
+        # })
+        self.observation_space = Box(low=-np.inf, high=np.inf, shape=(2+2+2,), dtype=np.float32) # ['agent_position','agent_velocity','target_position']
 
         # Sets all the episode specific variables         
         self.reset()
@@ -99,11 +100,12 @@ class Spaceship(gym.Env):
         reward = self._get_reward()
         
         # Prepare return payload
-        observation = {
-            "agent_position": self._agent_position,
-            "agent_velocity": self._velocity,
-            "target_postion": self._get_noisy_target_position()
-        }
+        # observation = {
+        #     "agent_position": self._agent_position,
+        #     "agent_velocity": self._velocity,
+        #     "target_postion": self._get_noisy_target_position()
+        # }
+        state = np.concatenate([self._agent_position, self._velocity, self._get_noisy_target_position()])
 
         done = self._target_reached() \
                or self._is_agent_outside_boundary() \
@@ -111,4 +113,4 @@ class Spaceship(gym.Env):
 
         constraint_violation = self._is_agent_outside_boundary()
         
-        return observation, reward, done, {'constraint_violation': constraint_violation}
+        return state, reward, done, {'constraint_violation': constraint_violation}
