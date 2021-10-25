@@ -17,8 +17,8 @@ class Trainer:
     def __init__(self):
         config = Config.get().main.trainer
         # set seeds
-        torch.manual_seed(config.seed)
-        np.random.seed(int(config.seed))
+        # torch.manual_seed(config.seed)
+        # np.random.seed(int(config.seed))
 
         self.use_safety_layer = config.use_safety_layer
 
@@ -127,7 +127,7 @@ class Trainer:
                         agent.update(batch_size)
                     state = next_state
                     constraints = env.get_constraint_values()
-            print(f"Finished epoch {epoch}. Running validation ...")
+            print(f"Finished epoch {epoch}. Running evaluation ...")
 
             # evaluation phase
             episode_rewards, episode_lengths, episode_actions = [], [], []

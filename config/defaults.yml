@@ -16,7 +16,7 @@ arguments:
           - name: "episode_length"
             default: 30
           - name: "time_step"
-            default: 0.1
+            default: 0.05
           - name: "respawn_interval"
             default: 2
           - name: "target_noise_std"
@@ -33,11 +33,19 @@ arguments:
       properties:
         - name: "layers"
           default: [100, 100]
+        # - name: "min_init_weight"
+        #   default: -0.003
+        # - name: "max_init_weight"
+        #   default: 0.003
     - name: "critic"
       help: "Critic network parameters."
       properties:
         - name: "layers"
           default: [500, 500]
+        # - name: "min_init_weight"
+        #   default: -0.0003
+        # - name: "max_init_weight"
+        #   default: 0.0003
     - name: "trainer"
       help: "Training parameters."
       properties:

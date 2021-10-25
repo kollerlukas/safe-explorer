@@ -27,29 +27,23 @@ class DDPGAgent:
         # init actor and critic networks
         self.actor = Actor(state_dim, self.actor_layers, action_dim)
         self.actor_target = Actor(state_dim, self.actor_layers, action_dim)
+        self.actor_target.load_state_dict(self.actor.state_dict())
         self.critic = Critic(state_dim + action_dim,
                              self.critic_layers, action_dim)
         self.critic_target = Critic(
             state_dim + action_dim, self.critic_layers, action_dim)
+        self.critic_target.load_state_dict(self.critic.state_dict())
         # use doubles for calculations
         self.actor.double()
         self.actor_target.double()
         self.critic.double()
         self.critic_target.double()
-
-        for target_param, param in zip(self.actor_target.parameters(), self.actor.parameters()):
-            target_param.data.copy_(param.data)
-
-        for target_param, param in zip(self.critic_target.parameters(), self.critic.parameters()):
-            target_param.data.copy_(param.data)
-
         # Training
         self.memory = Memory(self.memory_buffer_size)
         self.critic_criterion = nn.MSELoss()
         self.actor_optimizer = Adam(self.actor.parameters(), lr=self.actor_lr)
         self.critic_optimizer = Adam(
             self.critic.parameters(), lr=self.critic_lr)
-
         # Tensorboard writer
         self.writer = TensorBoard.get_writer()
         self.train_step = 0
@@ -57,7 +51,7 @@ class DDPGAgent:
     def get_action(self, state):
         state = Variable(torch.from_numpy(state).double().unsqueeze(0))
         action = self.actor.forward(state)
-        action = action.detach().numpy()[0]  # [0,0]
+        action = action.detach().numpy()[0]
         return action
 
     def update(self, batch_size):
