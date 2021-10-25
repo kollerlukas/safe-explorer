@@ -18,24 +18,24 @@ class SafetyLayer:
         # set attributes
         self.batch_size = config.batch_size
         self.lr = config.lr
-        self.max_episode_length = config.max_episode_length
+        # self.max_episode_length = config.max_episode_length
         self.epochs = config.epochs
         self.training_steps_per_epoch = config.training_steps_per_epoch
         self.evaluation_steps_per_epoch = config.evaluation_steps_per_epoch
-        self.replay_buffer_size = config.replay_buffer_size
+        self.memory_buffer_size = config.memory_buffer_size
         self.sample_data_episodes = config.sample_data_episodes
         # init constraint model
         state_dim = env.observation_space.shape[0]
         action_dim = env.action_space.shape[0]
         self.models = [ConstraintModel(state_dim, action_dim) for _ in range(env.get_num_constraints())]
-        self.optims = [Adam(model.parameters(), lr=self._config.lr) for model in self.models]
+        self.optims = [Adam(model.parameters(), lr=self.lr) for model in self.models]
         # use doubles for calculations
         for model in self.models:
             model.double()
         # Mean-Squared-Error as loss criterion
         self.loss_criterion = nn.MSELoss()
         # init memory
-        self.memory = Memory(self._config.replay_buffer_size)
+        self.memory = Memory(self.memory_buffer_size)
         # Tensorboard writer
         self.writer = TensorBoard.get_writer()
         self.train_step = 0
@@ -46,7 +46,9 @@ class SafetyLayer:
         for _ in range(episodes):
             state = self.env.reset(random_agent_position=True)
             constraints = self.env.get_constraint_values()
-            for _ in range(self._config.max_episode_length):
+            
+            done = False
+            while not done: 
                 # get random action
                 action = self.env.action_space.sample()
                 # apply action
@@ -55,12 +57,8 @@ class SafetyLayer:
                 next_constraints = self.env.get_constraint_values()
                 # push to memory
                 self.memory.push(state, action, constraints, next_constraints)
-                # check if episode is done
-                if done:
-                    break
-                else:
-                    state = next_state
-                    constraints = next_constraints
+                state = next_state
+                constraints = next_constraints
 
     def _calc_loss(self, model, states, actions, constraints, next_constraints):
         # calculate batch-dot-product via torch.einsum
@@ -123,13 +121,13 @@ class SafetyLayer:
         print("==========================================================")
 
         # sample random action episodes and store them in memory
-        self._sample_steps(self._config.sample_data_episodes)
+        self._sample_steps(self.sample_data_episodes)
 
-        for epoch in range(self._config.epochs):
+        for epoch in range(self.epochs):
             # training phase
             losses = []
-            for _ in range(self._config.training_steps_per_epoch):
-                batch = self.memory.sample(self._config.batch_size)
+            for _ in range(self.training_steps_per_epoch):
+                batch = self.memory.sample(self.batch_size)
                 loss = self._update_batch(batch)
                 losses.append(loss)
             print(f"Finished epoch {epoch} with average loss: {np.mean(losses, axis=0)}. Running evaluation ...")
@@ -140,8 +138,8 @@ class SafetyLayer:
             
             # evaluation phase
             losses = []
-            for _ in range(self._config.evaluation_steps_per_epoch):
-                batch = self.memory.sample(self._config.batch_size)
+            for _ in range(self.evaluation_steps_per_epoch):
+                batch = self.memory.sample(self.batch_size)
                 loss = self._evaluate_batch(batch)
                 losses.append(loss)
             print(f"Evaluation completed, average loss {np.mean(losses, axis=0)}")

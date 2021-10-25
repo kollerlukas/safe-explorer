@@ -24,7 +24,7 @@ arguments:
           - name: "enable_reward_shaping"
             default: false
           - name: "reward_shaping_slack"
-            default: 0.14 # 1d: 0.14; 3d: 0.2          
+            default: 0.14       
   - name: "ddpg"
     help: "Hyperparameters for DDPG algorithm."
     properties:
@@ -46,27 +46,21 @@ arguments:
         - name: "training_steps_per_epoch"
           default: 1000
         - name: "training_episodes_per_epoch"
-          default: 1 # 20
+          default: 1
         - name: "evaluation_episodes_per_epoch"
-          default: 1 # 5
+          default: 1
         - name: "batch_size"
           default: 256
-        - name: "max_episode_length"
-          default: 500 # 300
-        - name: "replay_buffer_size"
+        - name: "memory_buffer_size"
           default: 1000000
-        - name: "discount_factor"
+        - name: "gamma"
           default: 0.99
         - name: "tau"
           default: 0.001
         - name: "actor_lr"
-          default: 0.001 # 0.0001
+          default: 0.0001
         - name: "critic_lr"
           default: 0.001
-        - name: "action_noise_range"
-          default: 0.01
-        - name: "reward_scale"
-          default: 1
   - name: "safety_layer"
     help: "Safety layer configuration."
     properties:
@@ -78,22 +72,20 @@ arguments:
       - name: "trainer"
         help: "Constraint model training parameters"
         properties:
-          - name: "batch_size"
-            default: 256
-          - name: "lr"
-            default: 0.0001
-          - name: "max_episode_length"
-            default: 500 # 300
           - name: "epochs"
             default: 25
           - name: "training_steps_per_epoch"
             default: 1000
           - name: "evaluation_steps_per_epoch"
             default: 20
-          - name: "replay_buffer_size"
-            default: 1000000
           - name: "sample_data_episodes"
             default: 1000
+          - name: "batch_size"
+            default: 256
+          - name: "memory_buffer_size"
+            default: 1000000
+          - name: "lr"
+            default: 0.0001
   - name: "main"
     help: "Safe-Explorer driver properties."
     properties:

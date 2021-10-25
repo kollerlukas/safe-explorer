@@ -15,16 +15,19 @@ from safe_explorer.core.tensorboard import TensorBoard
 class DDPGAgent:
     def __init__(self, state_dim, action_dim):
         config = Config.get().ddpg
-        # Params
-        self.gamma = config.trainer.discount_factor # gamma
-        self.tau = config.trainer.tau # tau
-
-        # Networks
-        self.actor = Actor(state_dim, config.actor.layers, action_dim)
-        self.actor_target = Actor(state_dim, config.actor.layers, action_dim)
-        self.critic = Critic(state_dim + action_dim, config.critic.layers, action_dim)
-        self.critic_target = Critic(state_dim + action_dim, config.critic.layers, action_dim)
-
+        # set attributes
+        self.memory_buffer_size = config.trainer.memory_buffer_size
+        self.gamma = config.trainer.gamma
+        self.tau = config.trainer.tau
+        self.actor_lr = config.trainer.actor_lr
+        self.critic_lr = config.trainer.critic_lr
+        self.actor_layers = config.actor.layers
+        self.critic_layers = config.critic.layers
+        # init actor and critic networks
+        self.actor = Actor(state_dim, self.actor_layers, action_dim)
+        self.actor_target = Actor(state_dim, self.actor_layers, action_dim)
+        self.critic = Critic(state_dim + action_dim, self.critic_layers, action_dim)
+        self.critic_target = Critic(state_dim + action_dim, self.critic_layers, action_dim)
         # use doubles for calculations
         self.actor.double()
         self.actor_target.double()
@@ -38,10 +41,10 @@ class DDPGAgent:
             target_param.data.copy_(param.data)
         
         # Training
-        self.memory = Memory(config.trainer.replay_buffer_size)    
+        self.memory = Memory(self.memory_buffer_size)    
         self.critic_criterion = nn.MSELoss()
-        self.actor_optimizer = Adam(self.actor.parameters(), lr=config.trainer.actor_lr)
-        self.critic_optimizer = Adam(self.critic.parameters(), lr=config.trainer.critic_lr)
+        self.actor_optimizer = Adam(self.actor.parameters(), lr=self.actor_lr)
+        self.critic_optimizer = Adam(self.critic.parameters(), lr=self.critic_lr)
 
         # Tensorboard writer
         self.writer = TensorBoard.get_writer()
