@@ -1,12 +1,13 @@
 import numpy as np
-import gym
 from collections import deque
 import random
 
 # Ornstein-Ulhenbeck Process
-# Taken from #https://github.com/vitchyr/rlkit/blob/master/rlkit/exploration_strategies/ou_strategy.py
+# Taken from: https://github.com/vitchyr/rlkit/blob/master/rlkit/exploration_strategies/ou_strategy.py
 class OUNoise(object):
-    def __init__(self, action_space, mu=0.0, theta=0.15, max_sigma=0.3, min_sigma=0.3, decay_period=100000):
+    def __init__(self, action_space, mu=0.0, theta=0.15, max_sigma=0.2, min_sigma=None, decay_period=100000):
+        if min_sigma is None:
+            min_sigma = max_sigma
         self.mu           = mu
         self.theta        = theta
         self.sigma        = max_sigma
@@ -30,24 +31,11 @@ class OUNoise(object):
     def get_action(self, action, t=0):
         ou_state = self.evolve_state()
         self.sigma = self.max_sigma - (self.max_sigma - self.min_sigma) * min(1.0, t / self.decay_period)
-        return np.clip(action + ou_state, self.low, self.high)
+        return np.clip(action + ou_state, self.low, self.high)       
 
-
-# https://github.com/openai/gym/blob/master/gym/core.py
-class NormalizedEnv(gym.ActionWrapper):
-    """ Wrap action """
-
-    def _action(self, action):
-        act_k = (self.action_space.high - self.action_space.low)/ 2.
-        act_b = (self.action_space.high + self.action_space.low)/ 2.
-        return act_k * action + act_b
-
-    def _reverse_action(self, action):
-        act_k_inv = 2./(self.action_space.high - self.action_space.low)
-        act_b = (self.action_space.high + self.action_space.low)/ 2.
-        return act_k_inv * (action - act_b)
-        
-
+#
+# Based on the implementation from: https://towardsdatascience.com/deep-deterministic-policy-gradients-explained-2d94655a9b7b
+#
 class Memory:
     def __init__(self, max_size):
         self.max_size = max_size
@@ -58,16 +46,11 @@ class Memory:
         self.buffer.append(experience)
 
     def sample(self, batch_size):
-        state_batch = []
-        action_batch = []
-        reward_batch = []
-        next_state_batch = []
-        done_batch = []
+        state_batch, action_batch, reward_batch, next_state_batch, done_batch = [], [], [], [], []
 
         batch = random.sample(self.buffer, batch_size)
 
-        for experience in batch:
-            state, action, reward, next_state, done = experience
+        for state, action, reward, next_state, done in batch:
             state_batch.append(state)
             action_batch.append(action)
             reward_batch.append(reward)

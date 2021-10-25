@@ -1,12 +1,42 @@
 import argparse
 import copy
 import os
-import sys
+import inspect
 import yaml
 
-from safe_explorer.utils.namespacify import Namespacify
-from safe_explorer.utils.path import get_project_root_dir
+def get_project_root_dir():
+    return f"{get_current_file_path()}/../../"
 
+def get_current_file_path():
+    caller_file_path = os.path.abspath(inspect.getfile(inspect.currentframe().f_back))
+    return os.path.dirname(caller_file_path)
+
+def get_files_in_path(path):
+    return [f for f in os.listdir(path) \
+            if os.path.isfile(os.path.join(path, f))]
+
+class Namespacify(object):
+    def __init__(self, name, in_dict):
+        self.name = name
+
+        for key in in_dict.keys():
+            if isinstance(in_dict[key], dict):
+                in_dict[key] = Namespacify(key, in_dict[key])
+    
+        self.__dict__.update(in_dict)
+
+    def pprint(self, indent=0):
+        print(f"{' ' * indent}{self.name}:")
+        
+        indent += 4
+        
+        for k,v in self.__dict__.items():
+            if k == "name":
+                continue
+            if type(v) == Namespacify:
+                v.pprint(indent)
+            else:
+                print(f"{' ' * indent}{k}: {v}")
 
 class Config:
     _config = None

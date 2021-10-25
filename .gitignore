@@ -9,3 +9,5 @@ __pycache__/
 
 # Project specific
 runs/
+
+run_tests.sh

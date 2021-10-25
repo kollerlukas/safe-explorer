@@ -1,5 +1,5 @@
 #
-# Based on implementation from: https://towardsdatascience.com/deep-deterministic-policy-gradients-explained-2d94655a9b7b
+# Based on the implementation from: https://towardsdatascience.com/deep-deterministic-policy-gradients-explained-2d94655a9b7b
 #
 
 import torch
@@ -12,7 +12,7 @@ from safe_explorer.ddpg.models import Critic, Actor
 from safe_explorer.ddpg.utils import Memory
 from safe_explorer.core.tensorboard import TensorBoard
 
-class DDPGagent:
+class DDPGAgent:
     def __init__(self, state_dim, action_dim):
         config = Config.get().ddpg
         # Params
@@ -24,6 +24,12 @@ class DDPGagent:
         self.actor_target = Actor(state_dim, config.actor.layers, action_dim)
         self.critic = Critic(state_dim + action_dim, config.critic.layers, action_dim)
         self.critic_target = Critic(state_dim + action_dim, config.critic.layers, action_dim)
+
+        # use doubles for calculations
+        self.actor.double()
+        self.actor_target.double()
+        self.critic.double()
+        self.critic_target.double()
 
         for target_param, param in zip(self.actor_target.parameters(), self.actor.parameters()):
             target_param.data.copy_(param.data)
@@ -38,21 +44,21 @@ class DDPGagent:
         self.critic_optimizer = Adam(self.critic.parameters(), lr=config.trainer.critic_lr)
 
         # Tensorboard writer
-        self._writer = TensorBoard.get_writer()
-        self._train_step = 0
+        self.writer = TensorBoard.get_writer()
+        self.train_step = 0
     
     def get_action(self, state):
-        state = Variable(torch.from_numpy(state).float().unsqueeze(0))
+        state = Variable(torch.from_numpy(state).double().unsqueeze(0))
         action = self.actor.forward(state)
-        action = action.detach().numpy()[0,0]
+        action = action.detach().numpy()[0] # [0,0]
         return action
     
     def update(self, batch_size):
         states, actions, rewards, next_states, _ = self.memory.sample(batch_size)
-        states = torch.FloatTensor(states)
-        actions = torch.FloatTensor(actions)
-        rewards = torch.FloatTensor(rewards)
-        next_states = torch.FloatTensor(next_states)
+        states = torch.DoubleTensor(states)
+        actions = torch.DoubleTensor(actions)
+        rewards = torch.DoubleTensor(rewards)
+        next_states = torch.DoubleTensor(next_states)
     
         # Critic loss        
         Qvals = self.critic.forward(states, actions)
@@ -80,6 +86,6 @@ class DDPGagent:
         for target_param, param in zip(self.critic_target.parameters(), self.critic.parameters()):
             target_param.data.copy_(param.data * self.tau + target_param.data * (1.0 - self.tau))
 
-        # self._writer.add_scalar("DDPG/critic loss", critic_loss.item(), self._train_step)
-        # self._writer.add_scalar("DDPG/actor loss", policy_loss.item(), self._train_step)
-        # self._train_step +=1
+        self.writer.add_scalar("DDPG/critic loss", critic_loss.item(), self.train_step)
+        self.writer.add_scalar("DDPG/actor loss", policy_loss.item(), self.train_step)
+        self.train_step +=1

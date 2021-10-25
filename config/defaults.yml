@@ -4,31 +4,6 @@ arguments:
   - name: "env"
     help: "Configuration related to simulation environments."
     properties:
-      - name: "spaceship"
-        help: "Spaceship environment configuration."
-        properties:
-          - name: "length"
-            default: 2.5
-          - name: "margin"
-            default: 0.2
-          - name: "agent_slack"
-            default: 0.05
-          - name: "frequency_ratio"
-            default: 0.1
-          - name: "target_noise_std"
-            default: 0.05
-          - name: "target_radius"
-            default: 0.05
-          - name: "corridor_episode_length"
-            default: 15
-          - name: "arena_episode_length"
-            default: 45
-          - name: "enable_reward_shaping"
-            default: false
-          - name: "is_arena"
-            default: false
-          - name: "reward_shaping_slack"
-            default: 0.1
       - name: "ballnd"
         help: "Ball-ND environment configuration."
         properties:
@@ -40,7 +15,7 @@ arguments:
             default: 0.1
           - name: "episode_length"
             default: 30
-          - name: "frequency_ratio"
+          - name: "time_step"
             default: 0.1
           - name: "respawn_interval"
             default: 2
@@ -58,54 +33,40 @@ arguments:
       properties:
         - name: "layers"
           default: [100, 100]
-        # - name: "init_bound"
-        #   default: 0.003
     - name: "critic"
       help: "Critic network parameters."
       properties:
         - name: "layers"
           default: [500, 500]
-        # - name: "init_bound"
-        #   default: 0.003
     - name: "trainer"
       help: "Training parameters."
       properties:
         - name: "epochs"
-          default: 20 # 60
-        # - name: "steps_per_epoch"
-        #   default: 6000
-        # - name: "evaluation_steps"
-        #   default: 1500
-        - name: "training_episodes"
-          default: 40
-        - name: "evaluation_episodes"
-          default: 5
-        - name: "batch_size"
-          default: 128 # 256
-        - name: "max_episode_length"
           default: 300
+        - name: "training_steps_per_epoch"
+          default: 1000
+        - name: "training_episodes_per_epoch"
+          default: 1 # 20
+        - name: "evaluation_episodes_per_epoch"
+          default: 1 # 5
+        - name: "batch_size"
+          default: 256
+        - name: "max_episode_length"
+          default: 500 # 300
         - name: "replay_buffer_size"
-          default: 100000 # 1000000
+          default: 1000000
         - name: "discount_factor"
           default: 0.99
         - name: "tau"
-          default: 0.005
+          default: 0.001
         - name: "actor_lr"
-          default: 0.0001 # 0.001
+          default: 0.001 # 0.0001
         - name: "critic_lr"
           default: 0.001
-        # - name: "start_steps"
-        #   default: 500
         - name: "action_noise_range"
           default: 0.01
-        # - name: "use_gpu"
-        #   default: false
         - name: "reward_scale"
           default: 1
-        - name: "max_updates_per_episode"
-          default: 10
-        - name: "min_buffer_fill"
-          default: 2000
   - name: "safety_layer"
     help: "Safety layer configuration."
     properties:
@@ -113,9 +74,7 @@ arguments:
         help: "Hyperparameters for constraint model (g)"
         properties:
           - name: "layers"
-            default: [10] # [10, 10]
-          - name: "init_bound"
-            default: 0.003
+            default: [10]
       - name: "trainer"
         help: "Constraint model training parameters"
         properties:
@@ -124,17 +83,17 @@ arguments:
           - name: "lr"
             default: 0.0001
           - name: "max_episode_length"
-            default: 300
-          - name: "steps_per_epoch"
-            default: 6000
+            default: 500 # 300
           - name: "epochs"
             default: 25
-          - name: "evaluation_steps"
-            default: 1500
+          - name: "training_steps_per_epoch"
+            default: 1000
+          - name: "evaluation_steps_per_epoch"
+            default: 20
           - name: "replay_buffer_size"
-            default: 100000
-          # - name: "use_gpu"
-          #   default: false
+            default: 1000000
+          - name: "sample_data_episodes"
+            default: 1000
   - name: "main"
     help: "Safe-Explorer driver properties."
     properties:
@@ -144,6 +103,6 @@ arguments:
           - name: "seed"
             default: 0
           - name: "task"
-            default: "ballnd" # ballnd; spaceship
+            default: "ballnd"
           - name: "use_safety_layer"
             default: false
