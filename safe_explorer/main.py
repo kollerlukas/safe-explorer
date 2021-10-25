@@ -20,7 +20,7 @@ class Trainer:
         torch.manual_seed(config.seed)
         np.random.seed(int(config.seed))
 
-        self.use_safety_layer = self.config.use_safety_layer
+        self.use_safety_layer = config.use_safety_layer
 
     def train(self):
         print("============================================================")
@@ -40,7 +40,7 @@ class Trainer:
         # obtain state and action dimensions
         state_dim = env.observation_space.shape[0]
         action_dim = env.action_space.shape[0]
-        
+
         # get config
         config = Config.get().ddpg.trainer
         # get relevant config values
@@ -57,7 +57,7 @@ class Trainer:
         noise = OUNoise(env.action_space)
         # metrics for tensorboard
         cum_constr_viol = 0  # cumulative constraint violations
-        global_eval_step = 0
+        eval_step = 0
         episode_action, episode_reward, episode_length = 0, 0, 0
         # create Tensorboard writer
         writer = TensorBoard.get_writer()
@@ -139,8 +139,8 @@ class Trainer:
                 done = False
                 while not done:
                     # render environment; only for ball-1D
-                    # env.render()
-                    # get policy action
+                    env.render()
+                    # get original policy action
                     action = agent.get_action(state)
                     # get safe action
                     if safety_layer:
@@ -154,19 +154,20 @@ class Trainer:
                     constraints = env.get_constraint_values()
                     episode_length += 1
 
-                episode_rewards.append(episode_reward)
-                episode_lengths.append(episode_length)
-                episode_actions.append(episode_action / episode_length)
                 if 'constraint_violation' in info and info['constraint_violation']:
                     cum_constr_viol += 1
                 # log metrics to tensorboard
-                writer.add_scalar("episode length",
-                                  episode_length, global_eval_step)
-                writer.add_scalar("episode reward",
-                                  episode_reward, global_eval_step)
-                writer.add_scalar("cumulative constraint violations",
-                                  cum_constr_viol, global_eval_step)
-                global_eval_step += 1
+                writer.add_scalar("metrics/episode length",
+                                  episode_length, eval_step)
+                writer.add_scalar("metrics/episode reward",
+                                  episode_reward, eval_step)
+                writer.add_scalar("metrics/cumulative constraint violations",
+                                  cum_constr_viol, eval_step)
+                eval_step += 1
+
+                episode_rewards.append(episode_reward)
+                episode_lengths.append(episode_length)
+                episode_actions.append(episode_action / episode_length)
 
             print("Evaluation completed:\n"
                   f"Number of episodes: {len(episode_actions)}\n"

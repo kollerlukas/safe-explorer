@@ -10,6 +10,7 @@ from safe_explorer.core.tensorboard import TensorBoard
 from safe_explorer.safety_layer.constraint_model import ConstraintModel
 from safe_explorer.safety_layer.utils import Memory
 
+
 class SafetyLayer:
     def __init__(self, env):
         self.env = env
@@ -18,7 +19,6 @@ class SafetyLayer:
         # set attributes
         self.batch_size = config.batch_size
         self.lr = config.lr
-        # self.max_episode_length = config.max_episode_length
         self.epochs = config.epochs
         self.training_steps_per_epoch = config.training_steps_per_epoch
         self.evaluation_steps_per_epoch = config.evaluation_steps_per_epoch
@@ -27,8 +27,10 @@ class SafetyLayer:
         # init constraint model
         state_dim = env.observation_space.shape[0]
         action_dim = env.action_space.shape[0]
-        self.models = [ConstraintModel(state_dim, action_dim) for _ in range(env.get_num_constraints())]
-        self.optims = [Adam(model.parameters(), lr=self.lr) for model in self.models]
+        self.models = [ConstraintModel(state_dim, action_dim)
+                       for _ in range(env.get_num_constraints())]
+        self.optims = [Adam(model.parameters(), lr=self.lr)
+                       for model in self.models]
         # use doubles for calculations
         for model in self.models:
             model.double()
@@ -46,9 +48,9 @@ class SafetyLayer:
         for _ in range(episodes):
             state = self.env.reset(random_agent_position=True)
             constraints = self.env.get_constraint_values()
-            
+
             done = False
-            while not done: 
+            while not done:
                 # get random action
                 action = self.env.action_space.sample()
                 # apply action
@@ -62,8 +64,9 @@ class SafetyLayer:
 
     def _calc_loss(self, model, states, actions, constraints, next_constraints):
         # calculate batch-dot-product via torch.einsum
-        gi = model.forward(states) 
-        predicted_constraints = constraints + torch.einsum('ij,ij->i', gi, actions)
+        gi = model.forward(states)
+        predicted_constraints = constraints + \
+            torch.einsum('ij,ij->i', gi, actions)
         # alternative: calculate batch-dot-product via torch.bmm
         # gi = model.forward(states).unsqueeze(1)
         # actions = actions.unsqueeze(1)
@@ -85,7 +88,8 @@ class SafetyLayer:
         losses = []
         for i, (model, optimizer) in enumerate(zip(self.models, self.optims)):
             # calculate loss
-            loss = self._calc_loss(model, states, actions, constraints[:,i], next_constraints[:,i])
+            loss = self._calc_loss(
+                model, states, actions, constraints[:, i], next_constraints[:, i])
             losses.append(loss.item())
             # zero gradients
             optimizer.zero_grad()
@@ -106,17 +110,18 @@ class SafetyLayer:
         losses = []
         for i, model in enumerate(self.models):
             # compute losses
-            loss = self._calc_loss(model, states, actions, constraints[:,i], next_constraints[:,i])
+            loss = self._calc_loss(
+                model, states, actions, constraints[:, i], next_constraints[:, i])
             losses.append(loss.item())
 
-        return np.array(losses) 
+        return np.array(losses)
 
     def train(self):
         start_time = time.time()
 
         print("==========================================================")
         print("Initializing constraint model training...")
-        print("----------------------------------------------------------")        
+        print("----------------------------------------------------------")
         print(f"Start time: {datetime.fromtimestamp(start_time)}")
         print("==========================================================")
 
@@ -130,28 +135,33 @@ class SafetyLayer:
                 batch = self.memory.sample(self.batch_size)
                 loss = self._update_batch(batch)
                 losses.append(loss)
-            print(f"Finished epoch {epoch} with average loss: {np.mean(losses, axis=0)}. Running evaluation ...")
+            print(
+                f"Finished epoch {epoch} with average loss: {np.mean(losses, axis=0)}. Running evaluation ...")
             # log training losses to tensorboard
             for i, loss in enumerate(np.mean(losses, axis=0)):
-                self.writer.add_scalar(f"constraint {i}/training loss", loss, self.train_step)
+                self.writer.add_scalar(
+                    f"constraints/constraint {i}/training loss", loss, self.train_step)
             self.train_step += 1
-            
+
             # evaluation phase
             losses = []
             for _ in range(self.evaluation_steps_per_epoch):
                 batch = self.memory.sample(self.batch_size)
                 loss = self._evaluate_batch(batch)
                 losses.append(loss)
-            print(f"Evaluation completed, average loss {np.mean(losses, axis=0)}")
+            print(
+                f"Evaluation completed, average loss {np.mean(losses, axis=0)}")
             # log evaluation losses to tensorboard
             for i, loss in enumerate(np.mean(losses, axis=0)):
-                self.writer.add_scalar(f"constraint {i}/eval loss", loss, self.eval_step)
+                self.writer.add_scalar(
+                    f"constraints/constraint {i}/eval loss", loss, self.eval_step)
             self.eval_step += 1
             print("----------------------------------------------------------")
 
         self.writer.close()
         print("==========================================================")
-        print(f"Finished training constraint model. Time spent: {(time.time() - start_time) // 1} secs")
+        print(
+            f"Finished training constraint model. Time spent: {(time.time() - start_time) // 1} secs")
         print("==========================================================")
 
     def get_safe_action(self, state, action, constraints):
@@ -161,7 +171,8 @@ class SafetyLayer:
 
         g = [model.forward(state) for model in self.models]
         # calculate lagrange multipliers
-        multipliers = [torch.clip((torch.dot(gi, action) + ci) / torch.dot(gi, gi), min=0) for gi, ci in zip(g, constraints)]
+        multipliers = [torch.clip((torch.dot(
+            gi, action) + ci) / torch.dot(gi, gi), min=0) for gi, ci in zip(g, constraints)]
         # Calculate correction
         safe_action = action - np.max(multipliers) * g[np.argmax(multipliers)]
 

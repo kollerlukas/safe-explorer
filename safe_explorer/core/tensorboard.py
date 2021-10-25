@@ -3,6 +3,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from safe_explorer.core.config import Config
 
+
 class TensorBoard:
     _writer = None
 
@@ -15,7 +16,8 @@ class TensorBoard:
             outdir = None
             print(f'datetime: {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
             outdir = f'runs/{config.main.trainer.task}-{config.env.ballnd.n}D_DDPG' \
-                   + (f'+safety_layer' if config.main.trainer.use_safety_layer else '') \
-                   + (f'+reward_shaping' if config.env.ballnd.enable_reward_shaping else '')
-            cls._writer = SummaryWriter(outdir + f'-({datetime.now().strftime("%b%d_%H-%M-%S")})')
+                + (f'+safety_layer' if config.main.trainer.use_safety_layer else '') \
+                + (f'+reward_shaping' if config.env.ballnd.enable_reward_shaping else '')
+            cls._writer = SummaryWriter(
+                outdir + f'-({datetime.now().strftime("%b%d_%H-%M-%S")})')
             return cls._writer

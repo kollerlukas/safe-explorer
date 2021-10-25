@@ -4,16 +4,21 @@ import os
 import inspect
 import yaml
 
+
 def get_project_root_dir():
     return f"{get_current_file_path()}/../../"
 
+
 def get_current_file_path():
-    caller_file_path = os.path.abspath(inspect.getfile(inspect.currentframe().f_back))
+    caller_file_path = os.path.abspath(
+        inspect.getfile(inspect.currentframe().f_back))
     return os.path.dirname(caller_file_path)
 
+
 def get_files_in_path(path):
-    return [f for f in os.listdir(path) \
+    return [f for f in os.listdir(path)
             if os.path.isfile(os.path.join(path, f))]
+
 
 class Namespacify(object):
     def __init__(self, name, in_dict):
@@ -22,21 +27,22 @@ class Namespacify(object):
         for key in in_dict.keys():
             if isinstance(in_dict[key], dict):
                 in_dict[key] = Namespacify(key, in_dict[key])
-    
+
         self.__dict__.update(in_dict)
 
     def pprint(self, indent=0):
         print(f"{' ' * indent}{self.name}:")
-        
+
         indent += 4
-        
-        for k,v in self.__dict__.items():
+
+        for k, v in self.__dict__.items():
             if k == "name":
                 continue
             if type(v) == Namespacify:
                 v.pprint(indent)
             else:
                 print(f"{' ' * indent}{k}: {v}")
+
 
 class Config:
     _config = None
@@ -50,11 +56,14 @@ class Config:
                 sub_groups = cls._get_argument_groups(group["properties"])
                 for sub_group in sub_groups:
                     if not sub_group.get("_is_root", False):
-                        sub_group["name"] = f"{group['name']}_{sub_group['name']}".strip()
-                        sub_group["help"] = f"{group.get('help', '')} {sub_group.get('help', '')}".strip()
+                        sub_group["name"] = f"{group['name']}_{sub_group['name']}".strip(
+                        )
+                        sub_group["help"] = f"{group.get('help', '')} {sub_group.get('help', '')}".strip(
+                        )
 
                     for argument in sub_group.get("arguments", []):
-                        argument["name"] = f"{sub_group['name']}_{argument['name']}".strip()
+                        argument["name"] = f"{sub_group['name']}_{argument['name']}".strip(
+                        )
                         del argument["_is_root"]
 
                 if all([x.get("_is_root", False) for x in sub_groups]):
@@ -76,25 +85,27 @@ class Config:
                                          description=_help,
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         for argument_group in argument_groups:
-            group = parser.add_argument_group(argument_group["name"], argument_group.get('help', ''))
+            group = parser.add_argument_group(
+                argument_group["name"], argument_group.get('help', ''))
             for argument in argument_group.get("arguments", []):
                 default_value = argument.get("default", None)
                 options = {
                     "help": argument.get('help', ' '),
                     "default": default_value
                 }
-                
+
                 if type(default_value) == bool:
                     options["action"] = 'store_true'
                 else:
-                    options["type"] = type(default_value) if default_value else None
+                    options["type"] = type(
+                        default_value) if default_value else None
                     if type(default_value) == list:
                         options["nargs"] = '+'
 
                 group.add_argument(f"--{argument['name']}", **options)
-        
+
         return parser
-    
+
     @classmethod
     def _split_namespace(cls, parent_name, arg_config, parsed_dict):
         """Reestablish the hierarchy from parsed arguments"""
@@ -102,9 +113,10 @@ class Config:
         for group in arg_config:
             name = group["name"]
             if "properties" in group.keys():
-                matching_arguments = {k[(len(name) + 1):]: v for k, v \
-                                    in parsed_dict.items() if k.startswith(name)}
-                group_namespaces[name] = cls._split_namespace(name, group["properties"], matching_arguments)
+                matching_arguments = {k[(len(name) + 1):]: v for k, v
+                                      in parsed_dict.items() if k.startswith(name)}
+                group_namespaces[name] = cls._split_namespace(
+                    name, group["properties"], matching_arguments)
             else:
                 group_namespaces[name] = parsed_dict[name]
 
@@ -116,8 +128,10 @@ class Config:
         config_file_path = f"{get_project_root_dir()}/config/defaults.yml"
         config = yaml.load(open(config_file_path), Loader=yaml.FullLoader)
         argument_groups = cls._get_argument_groups(config["arguments"])
-        parser = cls._create_parser(config["name"], config.get("help", ''), argument_groups)
-        parsed_config = cls._split_namespace(config["name"], config["arguments"], parser.parse_args(args).__dict__)
+        parser = cls._create_parser(
+            config["name"], config.get("help", ''), argument_groups)
+        parsed_config = cls._split_namespace(
+            config["name"], config["arguments"], parser.parse_args(args).__dict__)
 
         cls._config = parsed_config
 

@@ -43,8 +43,8 @@ arguments:
       properties:
         - name: "epochs"
           default: 300
-        - name: "training_steps_per_epoch"
-          default: 1000
+        # - name: "training_steps_per_epoch"
+        #   default: 1000
         - name: "training_episodes_per_epoch"
           default: 1
         - name: "evaluation_episodes_per_epoch"

@@ -1,7 +1,7 @@
 from functional import seq
 import torch.nn as nn
-# from torch.nn.init import uniform_
 import torch.nn.functional as F
+
 
 class Net(nn.Module):
     def __init__(self, input_size, layer_dims, output_size, last_activation):
@@ -11,9 +11,9 @@ class Net(nn.Module):
 
         layer_dims = [input_size] + layer_dims + [output_size]
         self._layers = nn.ModuleList(seq(layer_dims[:-1])
-                                    .zip(layer_dims[1:])
-                                    .map(lambda x: nn.Linear(x[0], x[1]))
-                                    .to_list())
+                                     .zip(layer_dims[1:])
+                                     .map(lambda x: nn.Linear(x[0], x[1]))
+                                     .to_list())
 
     def forward(self, inp):
         out = inp

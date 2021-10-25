@@ -1,11 +1,12 @@
 from collections import deque
 import random
 
+
 class Memory:
     def __init__(self, max_size):
         self.max_size = max_size
         self.buffer = deque(maxlen=max_size)
-    
+
     def push(self, state, action, constraints, next_constraints):
         experience = (state, action, constraints, next_constraints)
         self.buffer.append(experience)
@@ -20,7 +21,7 @@ class Memory:
             action_batch.append(action)
             constraints_batch.append(constraints)
             next_constraints_batch.append(next_constraints)
-        
+
         return state_batch, action_batch, constraints_batch, next_constraints_batch
 
     def __len__(self):
