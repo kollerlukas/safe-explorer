@@ -1,4 +1,4 @@
-# Implementation "Safe Exploration in Continuous Action Spaces"
+# Implementation of "Safe Exploration in Continuous Action Spaces"
 
 ## Introduction
 
