@@ -34,6 +34,12 @@ The training can be monitored via Tensorboard with the following command.
 tensorboard --logdir=runs
 ```
 
+For the 1D- & 3D-case ```env.render()``` is implemented to give a visual output. The green circle depicts the agent's ball and the red circle depicts the target.
+
+![Ball1D render](images/ball1d.png)
+
+![Ball3D render](images/ball1d.png)
+
 ## Results
 
 To be updated.
