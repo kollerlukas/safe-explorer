@@ -138,17 +138,12 @@ class Trainer:
                 done = False
                 while not done:
                     # render environment; only implemented for ball-1D & -3D
-                    # env.render()
+                    env.render()
                     # get original policy action
                     action = agent.get_action(state)
-                    
-                    unsafe_action = action
-                    prev_state = state
-                    pred_constraints = safety_layer.predict_constraints(state, action, constraints)
-
                     # get safe action
                     if safety_layer:
-                        action, multiplier, g = safety_layer.get_safe_action(
+                        action = safety_layer.get_safe_action(
                             state, action, constraints)
                     episode_action += np.absolute(action)
                     # apply action
@@ -160,15 +155,6 @@ class Trainer:
 
                 if 'constraint_violation' in info and info['constraint_violation']:
                     cum_constr_viol += 1
-                    print("----------\n"
-                          f"unsafe_action: {unsafe_action}\n"
-                          f"safe action: {action}\n"
-                          # f"pred_constraints: {pred_constraints}\n"
-                          f"new constraints: {constraints}\n"
-                          f"prev state: {prev_state}\n"
-                          f"new state: {state}\n"
-                          f"multiplier: {multiplier}\n"
-                          f"g: {g}")
                 # log metrics to tensorboard
                 writer.add_scalar("metrics/episode length",
                                   episode_length, eval_step)
