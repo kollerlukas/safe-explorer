@@ -38,7 +38,7 @@ For the 1D- & 3D-case ```env.render()``` is implemented to give a visual output.
 
 ![Ball1D render](images/ball1d.png)
 
-![Ball3D render](images/ball1d.png)
+![Ball3D render](images/ball3d.png)
 
 ## Results
 
