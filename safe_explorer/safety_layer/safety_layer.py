@@ -176,14 +176,15 @@ class SafetyLayer:
         # Calculate correction
         safe_action = action - np.max(multipliers) * g[np.argmax(multipliers)]
 
-        return safe_action.data.detach().numpy()
+        return safe_action.data.detach().numpy(), [li.data.detach().numpy() for li in multipliers], [gi.data.detach().numpy() for gi in g]
 
-    # def predict_constraints(self, state, action, constraints):
-    #     state = torch.DoubleTensor(state[0:1])
-    #     action = torch.DoubleTensor(action)
-    #     constraints = torch.DoubleTensor(constraints)
+    def predict_constraints(self, state, action, constraints):
+        state = torch.DoubleTensor(state)
+        action = torch.DoubleTensor(action)
+        constraints = torch.DoubleTensor(constraints)
 
-    #     g = [model.forward(state) for model in self.models]
-    #     pred_constraints = [torch.dot(gi, action) + ci for gi, ci in zip(g, constraints)]
-    #     pred_constraints = [ci.data.detach().numpy() for ci in pred_constraints]
-    #     return pred_constraints
+        g = [model.forward(state) for model in self.models]
+        # calculate lagrange multipliers
+        pred_constraints = [(torch.dot(gi, action) + ci) for gi, ci in zip(g, constraints)]
+        pred_constraints = [ci.data.detach().numpy() for ci in pred_constraints]
+        return pred_constraints

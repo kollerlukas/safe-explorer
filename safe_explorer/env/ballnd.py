@@ -1,5 +1,5 @@
 import gym
-from gym.spaces import Box, Dict
+from gym.spaces import Box
 import numpy as np
 from numpy import linalg as LA
 
@@ -46,7 +46,7 @@ class BallND(gym.Env):
         return np.concatenate([self.ball_pos, self.ball_velocity, self._get_noisy_target_pos()])
 
     def _is_ball_outside_boundary(self):
-        return np.any(self.ball_pos < 0) or np.any(self.ball_pos > 1)
+        return np.any(self.ball_pos < 0.) or np.any(self.ball_pos > 1.)
 
     def _is_ball_outside_shaping_boundary(self):
         return np.any(self.ball_pos < self.reward_shaping_slack) \
@@ -59,8 +59,7 @@ class BallND(gym.Env):
             return np.clip(1 - 10 * LA.norm(self.ball_pos - self.target_pos)**2, 0, 1)
 
     def _reset_target_pos(self):
-        self.target_pos = \
-            (1 - 2 * self.target_margin) * \
+        self.target_pos = (1 - 2 * self.target_margin) * \
             np.random.random(self.n) + self.target_margin
 
     def _move_ball(self):
@@ -76,8 +75,7 @@ class BallND(gym.Env):
             self.target_respawn_time = 0.
 
     def _get_noisy_target_pos(self):
-        return self.target_pos + \
-            np.random.normal(0, self.target_noise_std, self.n)
+        return self.target_pos + np.random.normal(0, self.target_noise_std, self.n)
 
     def get_num_constraints(self):
         return 2*self.n
@@ -86,12 +84,14 @@ class BallND(gym.Env):
         # define all constraint bounds as 0: C_i = 0 for all i
         # set lower and upper constraint for each dimension:
         #     slack < ball position < 1 - slack
+        
         # slack < ball position --> slack - ball position < 0
         min_constraints = self.agent_slack - self.ball_pos
+        
         # ball position < 1 - slack --> ball position - (1 - slack) < 0
-        max_constraint = self.ball_pos - (1 - self.agent_slack)
+        max_constraints = self.ball_pos - (1 - self.agent_slack)
 
-        return np.concatenate([min_constraints, max_constraint])
+        return np.concatenate([min_constraints, max_constraints])
 
     def step(self, action):
         # set action
@@ -159,6 +159,7 @@ class BallND(gym.Env):
                 cube = rendering.make_polyline(cube_polyline2d)
                 cube.set_color(0, 0, 0)
                 self.viewer.add_geom(cube)
+
             # render target
             target = rendering.make_circle(ball_dia*scale)
             target.set_color(0.8, 0., 0.)

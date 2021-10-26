@@ -2,7 +2,6 @@ import time
 from datetime import datetime
 from functional import seq
 import numpy as np
-import torch
 
 from safe_explorer.core.config import Config
 from safe_explorer.core.tensorboard import TensorBoard
@@ -115,7 +114,7 @@ class Trainer:
                     action = noise.get_action(action, episode_step)
                     # get safe action
                     if safety_layer:
-                        action = safety_layer.get_safe_action(
+                        action, _, _ = safety_layer.get_safe_action(
                             state, action, constraints)
                     # apply action
                     next_state, reward, done, info = env.step(action)
@@ -138,13 +137,18 @@ class Trainer:
                 episode_action, episode_reward, episode_length = 0, 0, 0
                 done = False
                 while not done:
-                    # render environment; only for ball-1D
-                    env.render()
+                    # render environment; only implemented for ball-1D & -3D
+                    # env.render()
                     # get original policy action
                     action = agent.get_action(state)
+                    
+                    unsafe_action = action
+                    prev_state = state
+                    pred_constraints = safety_layer.predict_constraints(state, action, constraints)
+
                     # get safe action
                     if safety_layer:
-                        action = safety_layer.get_safe_action(
+                        action, multiplier, g = safety_layer.get_safe_action(
                             state, action, constraints)
                     episode_action += np.absolute(action)
                     # apply action
@@ -156,6 +160,15 @@ class Trainer:
 
                 if 'constraint_violation' in info and info['constraint_violation']:
                     cum_constr_viol += 1
+                    print("----------\n"
+                          f"unsafe_action: {unsafe_action}\n"
+                          f"safe action: {action}\n"
+                          # f"pred_constraints: {pred_constraints}\n"
+                          f"new constraints: {constraints}\n"
+                          f"prev state: {prev_state}\n"
+                          f"new state: {state}\n"
+                          f"multiplier: {multiplier}\n"
+                          f"g: {g}")
                 # log metrics to tensorboard
                 writer.add_scalar("metrics/episode length",
                                   episode_length, eval_step)
