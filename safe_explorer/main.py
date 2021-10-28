@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 from functional import seq
 import numpy as np
+import torch
 
 from safe_explorer.core.config import Config
 from safe_explorer.core.tensorboard import TensorBoard
@@ -16,8 +17,8 @@ class Trainer:
     def __init__(self):
         config = Config.get().main.trainer
         # set seeds
-        # torch.manual_seed(config.seed)
-        # np.random.seed(int(config.seed))
+        torch.manual_seed(config.seed)
+        np.random.seed(int(config.seed))
 
         self.use_safety_layer = config.use_safety_layer
 
@@ -114,7 +115,7 @@ class Trainer:
                     action = noise.get_action(action, episode_step)
                     # get safe action
                     if safety_layer:
-                        action, _, _ = safety_layer.get_safe_action(
+                        action = safety_layer.get_safe_action(
                             state, action, constraints)
                     # apply action
                     next_state, reward, done, info = env.step(action)
@@ -134,11 +135,11 @@ class Trainer:
                 state = env.reset()
                 constraints = env.get_constraint_values()
 
-                episode_action, episode_reward, episode_length = 0, 0, 0
+                episode_action, episode_reward, episode_step = 0, 0, 0
                 done = False
                 while not done:
                     # render environment; only implemented for ball-1D & -3D
-                    env.render()
+                    # env.render()
                     # get original policy action
                     action = agent.get_action(state)
                     # get safe action
@@ -148,16 +149,16 @@ class Trainer:
                     episode_action += np.absolute(action)
                     # apply action
                     state, reward, done, info = env.step(action)
+                    episode_step += 1
                     # update metrics
                     episode_reward += reward
                     constraints = env.get_constraint_values()
-                    episode_length += 1
 
                 if 'constraint_violation' in info and info['constraint_violation']:
                     cum_constr_viol += 1
                 # log metrics to tensorboard
                 writer.add_scalar("metrics/episode length",
-                                  episode_length, eval_step)
+                                  episode_step, eval_step)
                 writer.add_scalar("metrics/episode reward",
                                   episode_reward, eval_step)
                 writer.add_scalar("metrics/cumulative constraint violations",
@@ -165,8 +166,8 @@ class Trainer:
                 eval_step += 1
 
                 episode_rewards.append(episode_reward)
-                episode_lengths.append(episode_length)
-                episode_actions.append(episode_action / episode_length)
+                episode_lengths.append(episode_step)
+                episode_actions.append(episode_action / episode_step)
 
             print("Evaluation completed:\n"
                   f"Number of episodes: {len(episode_actions)}\n"

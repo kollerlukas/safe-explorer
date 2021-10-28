@@ -16,7 +16,7 @@ arguments:
           - name: "episode_length"
             default: 30
           - name: "time_step"
-            default: 0.05
+            default: 0.1
           - name: "respawn_interval"
             default: 2
           - name: "target_noise_std"

@@ -84,10 +84,10 @@ class BallND(gym.Env):
         # define all constraint bounds as 0: C_i = 0 for all i
         # set lower and upper constraint for each dimension:
         #     slack < ball position < 1 - slack
-        
+
         # slack < ball position --> slack - ball position < 0
         min_constraints = self.agent_slack - self.ball_pos
-        
+
         # ball position < 1 - slack --> ball position - (1 - slack) < 0
         max_constraints = self.ball_pos - (1 - self.agent_slack)
 
