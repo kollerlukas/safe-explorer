@@ -41,12 +41,25 @@ class DDPGAgent:
         # Training
         self.memory = Memory(self.memory_buffer_size)
         self.critic_criterion = nn.MSELoss()
-        self.actor_optimizer = Adam(self.actor.parameters(), lr=self.actor_lr)
+        self.actor_optimizer = Adam(
+            self.actor.parameters(), lr=self.actor_lr)
         self.critic_optimizer = Adam(
             self.critic.parameters(), lr=self.critic_lr)
         # Tensorboard writer
         self.writer = TensorBoard.get_writer()
         self.train_step = 0
+
+    def set_train_mode(self):
+        self.actor.train()
+        self.actor_target.train()
+        self.critic.train()
+        self.critic_target.train()
+
+    def set_eval_mode(self):
+        self.actor.eval()
+        self.actor_target.eval()
+        self.critic.eval()
+        self.critic_target.eval()
 
     def get_action(self, state):
         state = Variable(torch.from_numpy(state).double().unsqueeze(0))

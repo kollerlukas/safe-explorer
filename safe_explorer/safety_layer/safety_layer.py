@@ -25,10 +25,10 @@ class SafetyLayer:
         self.memory_buffer_size = config.memory_buffer_size
         self.sample_data_episodes = config.sample_data_episodes
         # init constraint model
-        state_dim = env.observation_space.shape[0]
-        action_dim = env.action_space.shape[0]
+        state_dim = self.env.observation_space.shape[0]
+        action_dim = self.env.action_space.shape[0]
         self.models = [ConstraintModel(state_dim, action_dim)
-                       for _ in range(env.get_num_constraints())]
+                       for _ in range(self.env.get_num_constraints())]
         self.optims = [Adam(model.parameters(), lr=self.lr)
                        for model in self.models]
         # use doubles for calculations
@@ -43,10 +43,19 @@ class SafetyLayer:
         self.train_step = 0
         self.eval_step = 0
 
+    def set_train_mode(self):
+        for model in self.models:
+            model.train()
+
+    def set_eval_mode(self):
+        for model in self.models:
+            model.eval()
+
     def _sample_steps(self, episodes):
         # sample episodes and push to memory
         for _ in range(episodes):
-            state = self.env.reset(random_agent_position=True)
+            # state = self.env.reset(random_agent_position=True)
+            state = self.env.reset()
             constraints = self.env.get_constraint_values()
 
             done = False
@@ -130,6 +139,7 @@ class SafetyLayer:
 
         for epoch in range(self.epochs):
             # training phase
+            self.set_train_mode()
             losses = []
             for _ in range(self.training_steps_per_epoch):
                 batch = self.memory.sample(self.batch_size)
@@ -144,6 +154,7 @@ class SafetyLayer:
             self.train_step += 1
 
             # evaluation phase
+            self.set_eval_mode()
             losses = []
             for _ in range(self.evaluation_steps_per_epoch):
                 batch = self.memory.sample(self.batch_size)
@@ -165,6 +176,8 @@ class SafetyLayer:
         print("==========================================================")
 
     def get_safe_action(self, state, action, constraints):
+        self.set_eval_mode()
+
         state = torch.DoubleTensor(state)
         action = torch.DoubleTensor(action)
         constraints = torch.DoubleTensor(constraints)
@@ -175,8 +188,8 @@ class SafetyLayer:
             gi, action) + ci) / torch.dot(gi, gi), min=0) for gi, ci in zip(g, constraints)]
         # Calculate correction
         safe_action = action - np.max(multipliers) * g[np.argmax(multipliers)]
-
-        return safe_action.data.detach().numpy()
+        safe_action = safe_action.data.detach().numpy()
+        return safe_action
 
     # def predict_constraints(self, state, action, constraints):
     #     state = torch.DoubleTensor(state)

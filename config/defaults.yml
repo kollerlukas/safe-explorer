@@ -4,6 +4,21 @@ arguments:
   - name: "env"
     help: "Configuration related to simulation environments."
     properties:
+      - name: "spaceship"
+        help: "Spaceship environment configuration."
+        properties:
+          - name: "arena"
+            default: false
+          - name: "agent_slack"
+            default: 0.05
+          - name: "episode_length"
+            default: 15
+          - name: "time_step"
+            default: 0.1
+          - name: "enable_reward_shaping"
+            default: false
+          - name: "reward_shaping_margin"
+            default: 0.17     
       - name: "ballnd"
         help: "Ball-ND environment configuration."
         properties:
@@ -23,7 +38,7 @@ arguments:
             default: 0.05
           - name: "enable_reward_shaping"
             default: false
-          - name: "reward_shaping_slack"
+          - name: "reward_shaping_margin"
             default: 0.14       
   - name: "ddpg"
     help: "Hyperparameters for DDPG algorithm."
@@ -103,6 +118,6 @@ arguments:
           - name: "seed"
             default: 0
           - name: "task"
-            default: "ballnd"
+            default: "ballnd" # spaceship; ballnd
           - name: "use_safety_layer"
             default: false

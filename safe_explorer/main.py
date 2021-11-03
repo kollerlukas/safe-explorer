@@ -7,6 +7,7 @@ import torch
 from safe_explorer.core.config import Config
 from safe_explorer.core.tensorboard import TensorBoard
 from safe_explorer.env.ballnd import BallND
+from safe_explorer.env.spaceship import Spaceship
 from safe_explorer.safety_layer.safety_layer import SafetyLayer
 
 from safe_explorer.ddpg.ddpg import DDPGAgent
@@ -22,6 +23,12 @@ class Trainer:
 
         self.use_safety_layer = config.use_safety_layer
 
+        # create environment
+        if config.task == 'ballnd':
+            self.env = BallND()
+        else:
+            self.env = Spaceship()
+
     def train(self):
         print("============================================================")
         print("Initialized SafeExplorer with config:")
@@ -29,17 +36,14 @@ class Trainer:
         Config.get().pprint()
         print("============================================================")
 
-        # create ball domain
-        env = BallND()
-
         # init Safety Layer
         safety_layer = None
         if self.use_safety_layer:
-            safety_layer = SafetyLayer(env)
+            safety_layer = SafetyLayer(self.env)
             safety_layer.train()
         # obtain state and action dimensions
-        state_dim = env.observation_space.shape[0]
-        action_dim = env.action_space.shape[0]
+        state_dim = self.env.observation_space.shape[0]
+        action_dim = self.env.action_space.shape[0]
 
         # get config
         config = Config.get().ddpg.trainer
@@ -54,11 +58,11 @@ class Trainer:
         # create agent
         agent = DDPGAgent(state_dim, action_dim)
         # create exploration noise
-        noise = OUNoise(env.action_space)
+        noise = OUNoise(self.env.action_space)
         # metrics for tensorboard
         cum_constr_viol = 0  # cumulative constraint violations
         eval_step = 0
-        episode_action, episode_reward, episode_length = 0, 0, 0
+        # episode_action, episode_reward, episode_length = 0, 0, 0
         # create Tensorboard writer
         writer = TensorBoard.get_writer()
 
@@ -75,10 +79,10 @@ class Trainer:
             # for step in range(training_steps):
             #     if done:
             #         # reset episode
-            #         state = env.reset()
+            #         state = self.env.reset()
             #         noise.reset()
             #         episode_step = 0
-            #         constraints = env.get_constraint_values()
+            #         constraints = self.env.get_constraint_values()
             #     # get original policy action
             #     action = agent.get_action(state)
             #     # add OU-noise for exploration
@@ -88,7 +92,7 @@ class Trainer:
             #         action = safety_layer.get_safe_action(
             #             state, action, constraints)
             #     # apply action
-            #     next_state, reward, done, info = env.step(action)
+            #     next_state, reward, done, info = self.env.step(action)
             #     episode_step += 1
             #     # push to memory
             #     agent.memory.push(state, action, reward, next_state, done)
@@ -97,16 +101,16 @@ class Trainer:
             #         agent.update(batch_size)
             #     if not done:
             #         state = next_state
-            #         constraints = env.get_constraint_values()
+            #         constraints = self.env.get_constraint_values()
             # print(f"Finished epoch {epoch}. Running evaluation ...")
 
             # training phase
+            agent.set_train_mode()
             for _ in range(training_episodes):
                 noise.reset()
-                state = env.reset()
-                constraints = env.get_constraint_values()
+                state = self.env.reset()
+                # constraints = self.env.get_constraint_values()
                 episode_step = 0
-
                 done = False
                 while not done:
                     # get original policy action
@@ -115,10 +119,11 @@ class Trainer:
                     action = noise.get_action(action, episode_step)
                     # get safe action
                     if safety_layer:
+                        constraints = self.env.get_constraint_values()
                         action = safety_layer.get_safe_action(
                             state, action, constraints)
                     # apply action
-                    next_state, reward, done, info = env.step(action)
+                    next_state, reward, done, info = self.env.step(action)
                     episode_step += 1
                     # push to memory
                     agent.memory.push(state, action, reward, next_state, done)
@@ -126,33 +131,35 @@ class Trainer:
                     if len(agent.memory) > batch_size:
                         agent.update(batch_size)
                     state = next_state
-                    constraints = env.get_constraint_values()
+                    # constraints = self.env.get_constraint_values()
             print(f"Finished epoch {epoch}. Running evaluation ...")
 
             # evaluation phase
+            agent.set_eval_mode()
             episode_rewards, episode_lengths, episode_actions = [], [], []
             for _ in range(evaluation_episodes):
-                state = env.reset()
-                constraints = env.get_constraint_values()
+                state = self.env.reset()
+                # constraints = self.env.get_constraint_values()
 
                 episode_action, episode_reward, episode_step = 0, 0, 0
                 done = False
                 while not done:
                     # render environment; only implemented for ball-1D & -3D
-                    # env.render()
+                    self.env.render()
                     # get original policy action
                     action = agent.get_action(state)
                     # get safe action
                     if safety_layer:
+                        constraints = self.env.get_constraint_values()
                         action = safety_layer.get_safe_action(
                             state, action, constraints)
                     episode_action += np.absolute(action)
                     # apply action
-                    state, reward, done, info = env.step(action)
+                    state, reward, done, info = self.env.step(action)
                     episode_step += 1
                     # update metrics
                     episode_reward += reward
-                    constraints = env.get_constraint_values()
+                    # constraints = self.env.get_constraint_values()
 
                 if 'constraint_violation' in info and info['constraint_violation']:
                     cum_constr_viol += 1
@@ -181,7 +188,7 @@ class Trainer:
             f"Finished DDPG training. Time spent: {(time.time() - start_time) // 1} secs")
         print("==========================================================")
         # close environment
-        env.close()
+        self.env.close()
         # close tensorboard writer
         writer.close()
 
