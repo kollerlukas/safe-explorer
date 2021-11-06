@@ -16,7 +16,9 @@ class Spaceship(ConstraintEnv):
         self.arena = config.arena
         self.agent_slack = config.agent_slack
         self.episode_length = config.episode_length
+        self.episode_length_arena = config.episode_length_arena
         self.time_step = config.time_step
+        self.target_diameter = config.target_diameter
         self.enable_reward_shaping = config.enable_reward_shaping
         self.reward_shaping_margin = config.reward_shaping_margin
         # action space: a \in [-1,1]
@@ -55,27 +57,13 @@ class Spaceship(ConstraintEnv):
         else:
             return self.spaceship_pos[0] < 0. or 1. < self.spaceship_pos[0]
 
-    def _is_target_reached(self):
-        return np.linalg.norm(self.spaceship_pos - self.target_pos) < 0.025
-
-    def _get_reward(self):
-        if self._is_target_reached():
-            return 1000
-        elif self.enable_reward_shaping:
-            if self.arena:
-                if (np.any(self.spaceship_pos <= self.reward_shaping_margin)
-                        or np.any((1.-self.reward_shaping_margin) <= self.spaceship_pos)):
-                    return -1000
-                else:
-                    return 0
-            else:
-                if (self.spaceship_pos[0] <= self.reward_shaping_margin
-                        or (1.-self.reward_shaping_margin) <= self.spaceship_pos[0]):
-                    return -1000
-                else:
-                    return 0
+    def _is_spaceship_out_of_shaping_bounds(self):
+        if self.arena:
+            return np.any(self.spaceship_pos <= self.reward_shaping_margin) \
+                or np.any((1.-self.reward_shaping_margin) <= self.spaceship_pos)
         else:
-            return 0
+            return self.spaceship_pos[0] <= self.reward_shaping_margin \
+                or (1.-self.reward_shaping_margin) <= self.spaceship_pos[0]
 
     def _move_spaceship(self, thrusters):
         # advance time
@@ -83,8 +71,35 @@ class Spaceship(ConstraintEnv):
         # adjust spaceship's velocity
         self.spaceship_velocity += self.time_step * thrusters
         # move spaceship
+        old_pos = self.spaceship_pos
         self.spaceship_pos += self.time_step * self.spaceship_velocity
         self.spaceship_velocity *= 0.95  # dampening
+        # calculate reward: check if spaceship passed through target
+        target_reached = False
+        reward = 0.
+        # calculate distance between line old_pos->spaceship_pos and the target
+        dist = math.inf
+        tx, ty = self.target_pos[0], self.target_pos[1]
+        x1, y1 = old_pos[0], old_pos[1]
+        x2, y2 = self.spaceship_pos[0], self.spaceship_pos[1]
+        if (x1, y1) == (x2, y2):
+            # spaceship has not moved
+            dist = np.linalg.norm(self.spaceship_pos - self.target_pos)
+        else:
+            dist = abs((x2-x1)*(y1-ty)-(x1-tx)*(y2-y1)) / \
+                math.sqrt((x2-x1)**2+(y2-y1)**2)
+
+        if dist < self.target_diameter:
+            # target was reached
+            target_reached = True
+            reward = 1000
+            # set spaceship position to target position
+            self.spaceship_pos = self.target_pos
+
+        elif self.enable_reward_shaping and self._is_spaceship_out_of_shaping_bounds():
+            reward = -1000
+
+        return reward, target_reached
 
     def get_num_constraints(self):
         if self.arena:
@@ -115,17 +130,15 @@ class Spaceship(ConstraintEnv):
 
     def step(self, action):
         # move the spaceship with action
-        self._move_spaceship(action)
-        # get reward
-        reward = self._get_reward()
+        reward, target_reached = self._move_spaceship(action)
         # construct new state
         state = np.concatenate([self.spaceship_pos, self.spaceship_velocity])
         # check for constraint violation: hit the left or right wall
         constraint_violation = self._is_spaceship_out_of_bounds()
         # check if done: (i) constraint violation or (ii) target is reached or (iii) reached max episode length
         done = constraint_violation \
-            or self._is_target_reached() \
-            or self.time > self.episode_length
+            or target_reached \
+            or self.time > (self.episode_length_arena if self.arena else self.episode_length)
 
         return state, reward, done, {'constraint_violation': constraint_violation}
 
@@ -141,8 +154,6 @@ class Spaceship(ConstraintEnv):
         # render everything wrt. the center of the screen
         cx, cy = (screen_width - 2*padx)/2, (screen_height - 2*pady)/2
 
-        # set target rendering diameter relative to environment scale
-        ball_dia = 0.025
         # set wall rendering thickness relative to environment scale
         wall_thickness = 0.05
         # set the world dimensions
@@ -225,20 +236,21 @@ class Spaceship(ConstraintEnv):
 
             # spaceship coordinates relative to environment dimensions
             spaceship_coords = [
-                (-0.02, -0.04), (0, 0.04), (0.02, -0.04), (-0.02, -0.04)
+                (-2, -4), (0, 4), (2, -4), (-2, -4)
             ]
             # scale spaceship coordinates
             spaceship_coords = [(p[0]*scale, p[1]*scale)
                                 for p in spaceship_coords]
             # render spaceship
             spaceship = rendering.make_polygon(spaceship_coords)
-            spaceship.set_color(0, 0, 0)
+            spaceship.set_color(0, 0.8, 0)
             self.spaceship_trans = rendering.Transform()
+            self.spaceship_trans.set_scale(0.01, 0.01)
             spaceship.add_attr(self.spaceship_trans)
             self.viewer.add_geom(spaceship)
 
             # render target
-            target = rendering.make_circle(ball_dia*scale)
+            target = rendering.make_circle(self.target_diameter*scale)
             target.set_color(0.8, 0., 0.)
             self.target_trans = rendering.Transform()
             target.add_attr(self.target_trans)

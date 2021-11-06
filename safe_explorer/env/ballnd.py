@@ -46,18 +46,18 @@ class BallND(ConstraintEnv):
         self.target_respawn_time = 0.
         return np.concatenate([self.ball_pos, self.ball_velocity, self._get_noisy_target_pos()])
 
-    def _is_ball_outside_boundary(self):
+    def _is_ball_out_of_bounds(self):
         return np.any(self.ball_pos < 0.) or np.any(self.ball_pos > 1.)
 
-    def _is_ball_outside_shaping_boundary(self):
+    def _is_ball_out_of_shaping_bounds(self):
         return np.any(self.ball_pos < self.reward_shaping_margin) \
             or np.any(self.ball_pos > 1 - self.reward_shaping_margin)
 
     def _get_reward(self):
-        if self.enable_reward_shaping and self._is_ball_outside_shaping_boundary():
+        if self.enable_reward_shaping and self._is_ball_out_of_shaping_bounds():
             return -1
         else:
-            return np.clip(1 - 10 * np.linalg.norm(self.ball_pos - self.target_pos)**2, 0, 1)
+            return max(1 - 10 * np.linalg.norm(self.ball_pos - self.target_pos)**2, 0)
 
     def _reset_target_pos(self):
         self.target_pos = (1 - 2 * self.target_margin) * \
@@ -109,7 +109,7 @@ class BallND(ConstraintEnv):
         state = np.concatenate(
             [self.ball_pos, self.ball_velocity, self._get_noisy_target_pos()])
         # check for constraint violation
-        constraint_violation = self._is_ball_outside_boundary()
+        constraint_violation = self._is_ball_out_of_bounds()
         # check if done: (i) constraint violation or (ii) reached max episode length
         done = constraint_violation or self.time > self.episode_length
 

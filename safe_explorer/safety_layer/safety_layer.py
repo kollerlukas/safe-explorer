@@ -24,6 +24,8 @@ class SafetyLayer:
         self.evaluation_steps_per_epoch = config.evaluation_steps_per_epoch
         self.memory_buffer_size = config.memory_buffer_size
         self.sample_data_episodes = config.sample_data_episodes
+        self.action_low = self.env.action_space.low
+        self.action_high = self.env.action_space.high
         # init constraint model
         state_dim = self.env.observation_space.shape[0]
         action_dim = self.env.action_space.shape[0]
@@ -187,8 +189,10 @@ class SafetyLayer:
         multipliers = [torch.clip((torch.dot(
             gi, action) + ci) / torch.dot(gi, gi), min=0) for gi, ci in zip(g, constraints)]
         # Calculate correction
-        safe_action = action - np.max(multipliers) * g[np.argmax(multipliers)]
+        safe_action = action - np.max(multipliers) * g[np.argmax(multipliers)] *5
         safe_action = safe_action.data.detach().numpy()
+        safe_action = np.clip(safe_action, self.action_low, self.action_high)
+
         return safe_action
 
     # def predict_constraints(self, state, action, constraints):

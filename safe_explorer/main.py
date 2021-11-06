@@ -62,7 +62,6 @@ class Trainer:
         # metrics for tensorboard
         cum_constr_viol = 0  # cumulative constraint violations
         eval_step = 0
-        # episode_action, episode_reward, episode_length = 0, 0, 0
         # create Tensorboard writer
         writer = TensorBoard.get_writer()
 
@@ -75,6 +74,7 @@ class Trainer:
 
         for epoch in range(epochs):
             # training phase
+            # agent.set_train_mode()
             # episode_step, done = 0, True
             # for step in range(training_steps):
             #     if done:
@@ -109,7 +109,6 @@ class Trainer:
             for _ in range(training_episodes):
                 noise.reset()
                 state = self.env.reset()
-                # constraints = self.env.get_constraint_values()
                 episode_step = 0
                 done = False
                 while not done:
@@ -126,12 +125,11 @@ class Trainer:
                     next_state, reward, done, info = self.env.step(action)
                     episode_step += 1
                     # push to memory
-                    agent.memory.push(state, action, reward, next_state, done)
+                    agent.memory.push(state, action, reward*10, next_state, done)
                     # update agent
                     if len(agent.memory) > batch_size:
                         agent.update(batch_size)
                     state = next_state
-                    # constraints = self.env.get_constraint_values()
             print(f"Finished epoch {epoch}. Running evaluation ...")
 
             # evaluation phase
@@ -139,13 +137,12 @@ class Trainer:
             episode_rewards, episode_lengths, episode_actions = [], [], []
             for _ in range(evaluation_episodes):
                 state = self.env.reset()
-                # constraints = self.env.get_constraint_values()
+                # render environment
+                self.env.render()
 
                 episode_action, episode_reward, episode_step = 0, 0, 0
                 done = False
                 while not done:
-                    # render environment; only implemented for ball-1D & -3D
-                    self.env.render()
                     # get original policy action
                     action = agent.get_action(state)
                     # get safe action
@@ -159,7 +156,8 @@ class Trainer:
                     episode_step += 1
                     # update metrics
                     episode_reward += reward
-                    # constraints = self.env.get_constraint_values()
+                    # render environment
+                    self.env.render()
 
                 if 'constraint_violation' in info and info['constraint_violation']:
                     cum_constr_viol += 1

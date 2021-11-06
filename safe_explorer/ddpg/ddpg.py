@@ -15,15 +15,17 @@ from safe_explorer.core.tensorboard import TensorBoard
 
 class DDPGAgent:
     def __init__(self, state_dim, action_dim):
-        config = Config.get().ddpg
+        config = Config.get().ddpg.trainer
         # set attributes
-        self.memory_buffer_size = config.trainer.memory_buffer_size
-        self.gamma = config.trainer.gamma
-        self.tau = config.trainer.tau
-        self.actor_lr = config.trainer.actor_lr
-        self.critic_lr = config.trainer.critic_lr
-        self.actor_layers = config.actor.layers
-        self.critic_layers = config.critic.layers
+        self.memory_buffer_size = config.memory_buffer_size
+        self.gamma = config.gamma
+        self.tau = config.tau
+        self.actor_lr = config.actor_lr
+        self.critic_lr = config.critic_lr
+        self.actor_layers = config.actor_layers
+        self.critic_layers = config.critic_layers
+        self.actor_weight_decay = config.actor_weight_decay
+        self.critic_weight_decay = config.critic_weight_decay
         # init actor and critic networks
         self.actor = Actor(state_dim, self.actor_layers, action_dim)
         self.actor_target = Actor(state_dim, self.actor_layers, action_dim)
@@ -41,10 +43,10 @@ class DDPGAgent:
         # Training
         self.memory = Memory(self.memory_buffer_size)
         self.critic_criterion = nn.MSELoss()
-        self.actor_optimizer = Adam(
-            self.actor.parameters(), lr=self.actor_lr)
-        self.critic_optimizer = Adam(
-            self.critic.parameters(), lr=self.critic_lr)
+        self.actor_optimizer = Adam(self.actor.parameters(), lr=self.actor_lr,
+                                    weight_decay=self.actor_weight_decay)
+        self.critic_optimizer = Adam(self.critic.parameters(), lr=self.critic_lr,
+                                     weight_decay=self.critic_weight_decay)
         # Tensorboard writer
         self.writer = TensorBoard.get_writer()
         self.train_step = 0
@@ -80,7 +82,7 @@ class DDPGAgent:
         next_actions = self.actor_target.forward(next_states)
         next_Q = self.critic_target.forward(next_states, next_actions.detach())
         Qprime = rewards + self.gamma * next_Q
-        critic_loss = self.critic_criterion(Qvals, Qprime)
+        critic_loss = self.critic_criterion(Qprime, Qvals)
 
         # Actor loss
         policy_loss = - \

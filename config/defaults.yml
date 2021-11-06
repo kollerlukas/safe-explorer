@@ -13,8 +13,12 @@ arguments:
             default: 0.05
           - name: "episode_length"
             default: 15
+          - name: "episode_length_arena"
+            default: 45
           - name: "time_step"
             default: 0.1
+          - name: "target_diameter"
+            default: 0.025
           - name: "enable_reward_shaping"
             default: false
           - name: "reward_shaping_margin"
@@ -43,47 +47,37 @@ arguments:
   - name: "ddpg"
     help: "Hyperparameters for DDPG algorithm."
     properties:
-    - name: "actor"
-      help: "Actor network parameters."
-      properties:
-        - name: "layers"
-          default: [100, 100]
-        # - name: "min_init_weight"
-        #   default: -0.003
-        # - name: "max_init_weight"
-        #   default: 0.003
-    - name: "critic"
-      help: "Critic network parameters."
-      properties:
-        - name: "layers"
-          default: [500, 500]
-        # - name: "min_init_weight"
-        #   default: -0.0003
-        # - name: "max_init_weight"
-        #   default: 0.0003
-    - name: "trainer"
-      help: "Training parameters."
-      properties:
-        - name: "epochs"
-          default: 300
-        # - name: "training_steps_per_epoch"
-        #   default: 1000
-        - name: "training_episodes_per_epoch"
-          default: 1
-        - name: "evaluation_episodes_per_epoch"
-          default: 1
-        - name: "batch_size"
-          default: 256
-        - name: "memory_buffer_size"
-          default: 1000000
-        - name: "gamma"
-          default: 0.99
-        - name: "tau"
-          default: 0.001
-        - name: "actor_lr"
-          default: 0.0001
-        - name: "critic_lr"
-          default: 0.001
+      - name: "trainer"
+        help: "DDPG training parameters"
+        properties:
+          - name: "epochs"
+            default: 300
+          # - name: "training_steps_per_epoch"
+          #   default: 1000
+          - name: "training_episodes_per_epoch"
+            default: 1
+          - name: "evaluation_episodes_per_epoch"
+            default: 1
+          - name: "batch_size"
+            default: 256
+          - name: "memory_buffer_size"
+            default: 1000000
+          - name: "gamma"
+            default: 0.99
+          - name: "tau"
+            default: 0.001 
+          - name: "actor_layers"
+            default: [100, 100]
+          - name: "critic_layers"
+            default: [500, 500]
+          - name: "actor_lr"
+            default: 0.0001
+          - name: "critic_lr"
+            default: 0.001
+          - name: "actor_weight_decay"
+            default: 0.
+          - name: "critic_weight_decay"
+            default: 0.01
   - name: "safety_layer"
     help: "Safety layer configuration."
     properties:
@@ -96,7 +90,7 @@ arguments:
         help: "Constraint model training parameters"
         properties:
           - name: "epochs"
-            default: 25
+            default: 10 # 25
           - name: "training_steps_per_epoch"
             default: 1000
           - name: "evaluation_steps_per_epoch"
