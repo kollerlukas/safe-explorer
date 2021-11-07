@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This repository contains Pytorch implementation of paper ["Safe Exploration in Continuous Action Spaces" [Dalal et al.]](https://arxiv.org/pdf/1801.08757.pdf) [1]. 
+This repository contains Pytorch implementation of paper ["Safe Exploration in Continuous Action Spaces" [Dalal et al.]](https://arxiv.org/pdf/1801.08757.pdf). 
 
 ## Setup
 
@@ -20,7 +20,7 @@ python -m safe_explorer.main --help
 
 ## Domains
 
-The ball-ND and spaceship domain from [1] are implemented in custom [OpenAI gym](https://gym.openai.com/) environments (see ```safe-explorer/env```).
+The ball-ND and spaceship domain from [Dalal et al.] are implemented in custom [OpenAI gym](https://gym.openai.com/) environments (see ```safe-explorer/env```).
 
 ### Ball-ND Domain
 
@@ -49,9 +49,9 @@ TODO
 To be updated.
 
 ## References
-[1] Dalal, Gal, Krishnamurthy Dvijotham, Matej Vecerik, Todd Hester, Cosmin Paduraru, and Yuval Tassa (2018). “Safe Exploration in Continuous Action Spaces”. In: CoRR abs/1801.08757. arXiv: 1801.08757. url: http: //arxiv.org/abs/1801.08757.
+- Dalal, Gal, Krishnamurthy Dvijotham, Matej Vecerik, Todd Hester, Cosmin Paduraru, and Yuval Tassa (2018). “Safe Exploration in Continuous Action Spaces”. In: CoRR abs/1801.08757. arXiv: 1801.08757. url: http: //arxiv.org/abs/1801.08757.
 
-[2] Lillicrap, Timothy P., Jonathan J. Hunt, Alexander Pritzel, Nicolas Manfred Otto Heess, Tom Erez, Yuval Tassa, David Silver, and Daan Wierstra (2016). “Continuous control with deep reinforcement learning”. In: CoRR abs/1509.02971.
+- Lillicrap, Timothy P., Jonathan J. Hunt, Alexander Pritzel, Nicolas Manfred Otto Heess, Tom Erez, Yuval Tassa, David Silver, and Daan Wierstra (2016). “Continuous control with deep reinforcement learning”. In: CoRR abs/1509.02971.
 
 ## Acknowledgements
 
