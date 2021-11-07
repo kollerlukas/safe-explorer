@@ -48,3 +48,7 @@ To be updated.
 [1] Dalal, Gal, Krishnamurthy Dvijotham, Matej Vecerik, Todd Hester, Cosmin Paduraru, and Yuval Tassa (2018). “Safe Exploration in Continuous Action Spaces”. In: CoRR abs/1801.08757. arXiv: 1801.08757. url: http: //arxiv.org/abs/1801.08757.
 
 [2] Lillicrap, Timothy P., Jonathan J. Hunt, Alexander Pritzel, Nicolas Manfred Otto Heess, Tom Erez, Yuval Tassa, David Silver, and Daan Wierstra (2016). “Continuous control with deep reinforcement learning”. In: CoRR abs/1509.02971.
+
+## Acknowledgements
+
+This repo was originally a fork from https://github.com/AgrawalAmey/safe-explorer. I have re-implemented most of the DDPG, Safety Layer, and domains, therefore I have detached the fork. Some parts of the code are still reminiscent of the original fork.
