@@ -4,8 +4,6 @@
 
 This repository contains Pytorch implementation of paper ["Safe Exploration in Continuous Action Spaces" [Dalal et al.]](https://arxiv.org/pdf/1801.08757.pdf) [1]. 
 
-The Ball-Domain from [1] is implemented in a custom [OpenAI gym](https://gym.openai.com/) environment.
-
 ## Setup
 
 The code requires Python 3.6+ and is tested with torch 1.1.0. To install dependencies run the following command.
@@ -20,7 +18,11 @@ A list of parameters and their default values is printed with the following comm
 python -m safe_explorer.main --help
 ```
 
-### BallND
+## Domains
+
+The ball-ND and spaceship domain from [1] are implemented in custom [OpenAI gym](https://gym.openai.com/) environments (see ```safe-explorer/env```).
+
+### Ball-ND Domain
 
 The agent is trained by running the following command.
 ```sh
@@ -37,6 +39,10 @@ For the 1D- & 3D-case ```env.render()``` is implemented to give a visual output.
 ![Ball1D render](images/ball1d.png)
 
 ![Ball3D render](images/ball3d.png)
+
+### Spaceship Domain
+
+TODO
 
 ## Results
 
