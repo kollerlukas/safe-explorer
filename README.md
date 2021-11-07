@@ -57,4 +57,4 @@ To be updated.
 
 This repo was originally a fork from https://github.com/AgrawalAmey/safe-explorer. I have re-implemented most of the DDPG, Safety Layer, and domains, therefore I have detached the fork. Some parts of the code are still reminiscent of the original fork.
 
-The *Deep Determinitic Policy Gradient* (DDPG) [2] implementation is based on this implementation: [Deep Deterministic Policy Gradients Explained](https://towardsdatascience.com/deep-deterministic-policy-gradients-explained-2d94655a9b7b).
+The *Deep Determinitic Policy Gradient* (DDPG) [Lillicrap et al.] implementation is based on this implementation: [Deep Deterministic Policy Gradients Explained](https://towardsdatascience.com/deep-deterministic-policy-gradients-explained-2d94655a9b7b).
