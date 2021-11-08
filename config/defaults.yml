@@ -18,7 +18,7 @@ arguments:
           - name: "time_step"
             default: 0.1
           - name: "target_diameter"
-            default: 0.025
+            default: 0.05 # 0.025
           - name: "enable_reward_shaping"
             default: false
           - name: "reward_shaping_margin"
@@ -66,6 +66,8 @@ arguments:
             default: 0.99
           - name: "tau"
             default: 0.001 
+          - name: "reward_scale"
+            default: 1.0
           - name: "actor_layers"
             default: [100, 100]
           - name: "critic_layers"
@@ -75,7 +77,7 @@ arguments:
           - name: "critic_lr"
             default: 0.001
           - name: "actor_weight_decay"
-            default: 0.
+            default: 0.0
           - name: "critic_weight_decay"
             default: 0.01
   - name: "safety_layer"
@@ -90,7 +92,7 @@ arguments:
         help: "Constraint model training parameters"
         properties:
           - name: "epochs"
-            default: 10 # 25
+            default: 10
           - name: "training_steps_per_epoch"
             default: 1000
           - name: "evaluation_steps_per_epoch"
@@ -102,7 +104,9 @@ arguments:
           - name: "memory_buffer_size"
             default: 1000000
           - name: "lr"
-            default: 0.0001
+            default: 0.001
+          - name: "correction_scale"
+            default: 1.
   - name: "main"
     help: "Safe-Explorer driver properties."
     properties:

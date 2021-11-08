@@ -36,8 +36,9 @@ class BallND(ConstraintEnv):
 
     def reset(self, random_agent_position=False):
         if random_agent_position:
-            self.ball_pos = (1 - 2 * self.agent_slack) * \
-                np.random.random(self.n) + self.agent_slack
+            # self.ball_pos = (1 - 2 * self.agent_slack) * \
+            #     np.random.random(self.n) + self.agent_slack
+            self.ball_pos = np.random.random(self.n)
         else:
             self.ball_pos = 0.5 * np.ones(self.n)
         self.ball_velocity = np.zeros(self.n)

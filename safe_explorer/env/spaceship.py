@@ -38,11 +38,13 @@ class Spaceship(ConstraintEnv):
         else:
             self.target_pos = np.array([0.5, 1.])
 
-    def reset(self):
-        if self.arena:
+    def reset(self, random_agent_position=False):
+        if random_agent_position:
+            self.spaceship_pos = np.random.random(2)
+        elif self.arena:
             # spaceship start randomly in lower third: agent_slack <= x <= 0.3-agent_slack, agent_slack <= y <= 0.3-agent_slack
-            self.spaceship_pos = (0.3 - 2*self.agent_slack) * \
-                np.random.random(2) + self.agent_slack
+            self.spaceship_pos = (
+                0.3 - 2*self.agent_slack) * np.random.random(2) + self.agent_slack
         else:
             # spaceship start randomly in lower third: agent_slack <= x <= 1-agent_slack, 0 <= y <= 0.3
             self.spaceship_pos = np.multiply(np.array(

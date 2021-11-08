@@ -125,7 +125,7 @@ class Trainer:
                     next_state, reward, done, info = self.env.step(action)
                     episode_step += 1
                     # push to memory
-                    agent.memory.push(state, action, reward*10, next_state, done)
+                    agent.memory.push(state, action, reward, next_state, done)
                     # update agent
                     if len(agent.memory) > batch_size:
                         agent.update(batch_size)
@@ -138,7 +138,7 @@ class Trainer:
             for _ in range(evaluation_episodes):
                 state = self.env.reset()
                 # render environment
-                self.env.render()
+                # self.env.render()
 
                 episode_action, episode_reward, episode_step = 0, 0, 0
                 done = False
@@ -157,7 +157,7 @@ class Trainer:
                     # update metrics
                     episode_reward += reward
                     # render environment
-                    self.env.render()
+                    # self.env.render()
 
                 if 'constraint_violation' in info and info['constraint_violation']:
                     cum_constr_viol += 1

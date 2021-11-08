@@ -20,6 +20,7 @@ class DDPGAgent:
         self.memory_buffer_size = config.memory_buffer_size
         self.gamma = config.gamma
         self.tau = config.tau
+        self.reward_scale = config.reward_scale
         self.actor_lr = config.actor_lr
         self.critic_lr = config.critic_lr
         self.actor_layers = config.actor_layers
@@ -81,7 +82,7 @@ class DDPGAgent:
         Qvals = self.critic.forward(states, actions)
         next_actions = self.actor_target.forward(next_states)
         next_Q = self.critic_target.forward(next_states, next_actions.detach())
-        Qprime = rewards + self.gamma * next_Q
+        Qprime = rewards * self.reward_scale + self.gamma * next_Q
         critic_loss = self.critic_criterion(Qprime, Qvals)
 
         # Actor loss
