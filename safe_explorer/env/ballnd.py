@@ -22,6 +22,7 @@ class BallND(ConstraintEnv):
         self.target_noise_std = config.target_noise_std
         self.enable_reward_shaping = config.enable_reward_shaping
         self.reward_shaping_margin = config.reward_shaping_margin
+        self.control_acceleration = config.control_acceleration
         # action space
         self.action_space = Box(
             low=-math.inf, high=math.inf, shape=(self.n,), dtype=np.double)
@@ -64,13 +65,21 @@ class BallND(ConstraintEnv):
         self.target_pos = (1 - 2 * self.target_margin) * \
             np.random.random(self.n) + self.target_margin
 
-    def _move_ball(self):
+    def _move_ball(self, action):
         # advance time
-        self.time += self.time_step
-        self.target_respawn_time += self.time_step
-        # move ball
-        self.ball_pos += self.time_step * self.ball_velocity
-        self.ball_velocity *= 0.95  # dampening
+        self.time += self.time_step *4
+        self.target_respawn_time += self.time_step *4
+        # change velocity
+        if self.control_acceleration:
+            # adjust velocity with acceleration
+            self.ball_velocity += self.time_step*4 * action
+        else:
+            # the action gives the new velocity
+            self.ball_velocity = action
+        # move ball: execute 4 times steps; move ball 4 time steps
+        for _ in range(0, 4):    
+            self.ball_pos += self.time_step * self.ball_velocity
+            self.ball_velocity *= 0.95  # dampening
         # Check if the target needs to be relocated
         if self.target_respawn_time > self.respawn_interval:
             self._reset_target_pos()
@@ -99,11 +108,7 @@ class BallND(ConstraintEnv):
         return np.concatenate([min_constraints, max_constraints])
 
     def step(self, action):
-        # set action
-        self.ball_velocity = action
-        # execute 4 times steps; move ball 4 time steps
-        for _ in range(0, 4):
-            self._move_ball()
+        self._move_ball(action)
         # get reward
         reward = self._get_reward()
         # construct new state

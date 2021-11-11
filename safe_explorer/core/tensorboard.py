@@ -19,6 +19,8 @@ class TensorBoard:
             safety_layer, reward_shaping = config.main.trainer.use_safety_layer, False
             if config.main.trainer.task == "ballnd":
                 taskname = f'{config.main.trainer.task}-{config.env.ballnd.n}D_DDPG'
+                if config.env.ballnd.control_acceleration:
+                    taskname += '-acceleration'
                 reward_shaping = config.env.ballnd.enable_reward_shaping
             elif config.main.trainer.task == 'spaceship':
                 if config.env.spaceship.arena:

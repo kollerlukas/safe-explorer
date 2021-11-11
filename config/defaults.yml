@@ -43,7 +43,9 @@ arguments:
           - name: "enable_reward_shaping"
             default: false
           - name: "reward_shaping_margin"
-            default: 0.14       
+            default: 0.14  
+          - name: "control_acceleration"
+            default: false     
   - name: "ddpg"
     help: "Hyperparameters for DDPG algorithm."
     properties:
@@ -52,8 +54,6 @@ arguments:
         properties:
           - name: "epochs"
             default: 300
-          # - name: "training_steps_per_epoch"
-          #   default: 1000
           - name: "training_episodes_per_epoch"
             default: 1
           - name: "evaluation_episodes_per_epoch"
@@ -69,9 +69,9 @@ arguments:
           - name: "reward_scale"
             default: 1.0
           - name: "actor_layers"
-            default: [100, 100]
+            default: [64,64] # [100, 100]
           - name: "critic_layers"
-            default: [500, 500]
+            default: [256,256] # [500, 500]
           - name: "actor_lr"
             default: 0.0001
           - name: "critic_lr"
@@ -106,7 +106,7 @@ arguments:
           - name: "lr"
             default: 0.001
           - name: "correction_scale"
-            default: 1.
+            default: 5.0
   - name: "main"
     help: "Safe-Explorer driver properties."
     properties:

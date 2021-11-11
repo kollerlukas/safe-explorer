@@ -49,7 +49,6 @@ class Trainer:
         config = Config.get().ddpg.trainer
         # get relevant config values
         epochs = config.epochs
-        # training_steps = config.training_steps_per_epoch
         training_episodes = config.training_episodes_per_epoch
         evaluation_episodes = config.evaluation_episodes_per_epoch
         # max_episode_length = config.max_episode_length
@@ -74,56 +73,23 @@ class Trainer:
 
         for epoch in range(epochs):
             # training phase
-            # agent.set_train_mode()
-            # episode_step, done = 0, True
-            # for step in range(training_steps):
-            #     if done:
-            #         # reset episode
-            #         state = self.env.reset()
-            #         noise.reset()
-            #         episode_step = 0
-            #         constraints = self.env.get_constraint_values()
-            #     # get original policy action
-            #     action = agent.get_action(state)
-            #     # add OU-noise for exploration
-            #     action = noise.get_action(action, episode_step)
-            #     # get safe action
-            #     if safety_layer:
-            #         action = safety_layer.get_safe_action(
-            #             state, action, constraints)
-            #     # apply action
-            #     next_state, reward, done, info = self.env.step(action)
-            #     episode_step += 1
-            #     # push to memory
-            #     agent.memory.push(state, action, reward, next_state, done)
-            #     # update agent
-            #     if len(agent.memory) > batch_size:
-            #         agent.update(batch_size)
-            #     if not done:
-            #         state = next_state
-            #         constraints = self.env.get_constraint_values()
-            # print(f"Finished epoch {epoch}. Running evaluation ...")
-
-            # training phase
             agent.set_train_mode()
             for _ in range(training_episodes):
                 noise.reset()
                 state = self.env.reset()
-                episode_step = 0
                 done = False
                 while not done:
                     # get original policy action
                     action = agent.get_action(state)
                     # add OU-noise
-                    action = noise.get_action(action, episode_step)
+                    action = noise.get_action(action)
                     # get safe action
                     if safety_layer:
                         constraints = self.env.get_constraint_values()
                         action = safety_layer.get_safe_action(
                             state, action, constraints)
                     # apply action
-                    next_state, reward, done, info = self.env.step(action)
-                    episode_step += 1
+                    next_state, reward, done, _ = self.env.step(action)
                     # push to memory
                     agent.memory.push(state, action, reward, next_state, done)
                     # update agent
@@ -137,11 +103,10 @@ class Trainer:
             episode_rewards, episode_lengths, episode_actions = [], [], []
             for _ in range(evaluation_episodes):
                 state = self.env.reset()
-                # render environment
-                # self.env.render()
-
                 episode_action, episode_reward, episode_step = 0, 0, 0
                 done = False
+                # render environment
+                # self.env.render()
                 while not done:
                     # get original policy action
                     action = agent.get_action(state)
@@ -158,7 +123,7 @@ class Trainer:
                     episode_reward += reward
                     # render environment
                     # self.env.render()
-
+                    
                 if 'constraint_violation' in info and info['constraint_violation']:
                     cum_constr_viol += 1
                 # log metrics to tensorboard
@@ -169,7 +134,6 @@ class Trainer:
                 writer.add_scalar("metrics/cumulative constraint violations",
                                   cum_constr_viol, eval_step)
                 eval_step += 1
-
                 episode_rewards.append(episode_reward)
                 episode_lengths.append(episode_step)
                 episode_actions.append(episode_action / episode_step)

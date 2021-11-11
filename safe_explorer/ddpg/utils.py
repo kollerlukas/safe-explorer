@@ -31,7 +31,7 @@ class OUNoise(object):
         self.state = x + dx
         return self.state
 
-    def get_action(self, action, t=0):
+    def get_action(self, action, t=0.0):
         ou_state = self.evolve_state()
         self.sigma = self.max_sigma - \
             (self.max_sigma - self.min_sigma) * min(1.0, t / self.decay_period)
