@@ -50,9 +50,12 @@ TODO
 
 ## Results
 
-### Ball-1D parameters:
+![Results](images/results.png)
 
-#### Domain parameters:
+### Ball-1D parameters
+
+#### Domain parameters
+
 ```
 - n=1
 - target_margin=0.2
@@ -65,7 +68,9 @@ TODO
 - reward_shaping_margin=0.14  
 - control_acceleration=false     
 ```
-### DDPG parameters:
+
+### DDPG parameters
+
 ```
 - epochs=500
 - training_episodes_per_epoch=1
@@ -82,7 +87,9 @@ TODO
 - actor_weight_decay=0.0
 - critic_weight_decay=0.01
 ```
-#### Safety Layer parameters:
+
+#### Safety Layer parameters
+
 ```
 - layers=[10]
 - epochs=10
@@ -94,9 +101,10 @@ TODO
 - lr=0.001
 - correction_scale=5.0
 ```
-### Ball-3D parameters:
+### Ball-3D parameters
 
-#### Domain parameters:
+#### Domain parameters
+
 ```
 - n=3
 - target_margin=0.2
@@ -109,7 +117,9 @@ TODO
 - reward_shaping_margin=0.14  
 - control_acceleration=false     
 ```
-### DDPG parameters:
+
+### DDPG parameters
+
 ```
 - epochs=500
 - training_episodes_per_epoch=1
@@ -126,7 +136,9 @@ TODO
 - actor_weight_decay=0.0
 - critic_weight_decay=0.01
 ```
-#### Safety Layer parameters:
+
+#### Safety Layer parameters
+
 ```
 - layers=[10]
 - epochs=10
@@ -138,6 +150,7 @@ TODO
 - lr=0.001
 - correction_scale=5.0
 ```
+
 ## References
 - Dalal, Gal, Krishnamurthy Dvijotham, Matej Vecerik, Todd Hester, Cosmin Paduraru, and Yuval Tassa (2018). “Safe Exploration in Continuous Action Spaces”. In: CoRR abs/1801.08757. arXiv: 1801.08757. url: http: //arxiv.org/abs/1801.08757.
 
