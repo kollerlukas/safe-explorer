@@ -50,6 +50,8 @@ TODO
 
 ## Results
 
+I managed to get similiar results to [Dalal et al.].
+
 ![Results](images/results.png)
 
 ### Ball-1D parameters
