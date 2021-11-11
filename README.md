@@ -50,8 +50,94 @@ TODO
 
 ## Results
 
-To be updated.
+### Ball-1D parameters:
 
+#### Domain parameters:
+```
+- n=1
+- target_margin=0.2
+- agent_slack=0.1
+- episode_length=30
+- time_step=0.1
+- respawn_interval=2
+- target_noise_std=0.05
+- enable_reward_shaping=false
+- reward_shaping_margin=0.14  
+- control_acceleration=false     
+```
+### DDPG parameters:
+```
+- epochs=500
+- training_episodes_per_epoch=1
+- evaluation_episodes_per_epoch=1
+- batch_size=256
+- memory_buffer_size=1000000
+- gamma=0.99
+- tau=0.001 
+- reward_scale=1.0
+- actor_layers=[64,64]
+- critic_layers=[256,256]
+- actor_lr=0.0001
+- critic_lr=0.001
+- actor_weight_decay=0.0
+- critic_weight_decay=0.01
+```
+#### Safety Layer parameters:
+```
+- layers=[10]
+- epochs=10
+- training_steps_per_epoch=1000
+- evaluation_steps_per_epoch=20
+- sample_data_episodes=1000
+- batch_size=256
+- memory_buffer_size=1000000
+- lr=0.001
+- correction_scale=5.0
+```
+### Ball-3D parameters:
+
+#### Domain parameters:
+```
+- n=3
+- target_margin=0.2
+- agent_slack=0.1
+- episode_length=30
+- time_step=0.1
+- respawn_interval=2
+- target_noise_std=0.05
+- enable_reward_shaping=false
+- reward_shaping_margin=0.14  
+- control_acceleration=false     
+```
+### DDPG parameters:
+```
+- epochs=500
+- training_episodes_per_epoch=1
+- evaluation_episodes_per_epoch=1
+- batch_size=256
+- memory_buffer_size=1000000
+- gamma=0.99
+- tau=0.001 
+- reward_scale=10.0
+- actor_layers=[64,64]
+- critic_layers=[256,256]
+- actor_lr=0.0001
+- critic_lr=0.001
+- actor_weight_decay=0.0
+- critic_weight_decay=0.01
+```
+#### Safety Layer parameters:
+```
+- layers=[10]
+- epochs=10
+- training_steps_per_epoch=1000
+- evaluation_steps_per_epoch=20
+- sample_data_episodes=1000
+- batch_size=256
+- memory_buffer_size=1000000
+- lr=0.001
+- correction_scale=5.0
+```
 ## References
 - Dalal, Gal, Krishnamurthy Dvijotham, Matej Vecerik, Todd Hester, Cosmin Paduraru, and Yuval Tassa (2018). “Safe Exploration in Continuous Action Spaces”. In: CoRR abs/1801.08757. arXiv: 1801.08757. url: http: //arxiv.org/abs/1801.08757.
 
