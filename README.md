@@ -18,21 +18,25 @@ A list of parameters and their default values is printed with the following comm
 python -m safe_explorer.main --help
 ```
 
-## Domains
-
-The ball-ND and spaceship domain from [Dalal et al.] are implemented in custom [OpenAI gym](https://gym.openai.com/) environments (see ```safe-explorer/env```).
-
-### Ball-ND Domain
-
-The agent is trained by running the following command.
+With the following command the agent is trained on the ball domain.
 ```sh
 python -m safe_explorer.main --main_trainer_task ballnd
+```
+... on spaceship domain.
+```sh
+python -m safe_explorer.main --main_trainer_task spaceship
 ```
 
 The training can be monitored via Tensorboard with the following command.
 ```sh
 tensorboard --logdir=runs
 ```
+
+## Domains
+
+The ball-ND and spaceship domain from [Dalal et al.] are implemented in custom [OpenAI gym](https://gym.openai.com/) environments (see ```safe-explorer/env```).
+
+### Ball-ND Domain
 
 For the 1D- & 3D-case ```env.render()``` is implemented to give a visual output. The green circle depicts the agent's ball and the red circle depicts the target.
 
@@ -55,6 +59,6 @@ To be updated.
 
 ## Acknowledgements
 
-This repo was originally a fork from https://github.com/AgrawalAmey/safe-explorer. I have re-implemented most of the DDPG, Safety Layer, and domains, therefore I have detached the fork. Some parts of the code are still reminiscent of the original fork.
+This repository was originally a fork from https://github.com/AgrawalAmey/safe-explorer. I have re-implemented most of the DDPG, Safety Layer, and domains, therefore I have detached the fork. Some parts concerning the structure of the repository are reminiscent from the original fork.
 
 The *Deep Determinitic Policy Gradient* (DDPG) [Lillicrap et al.] implementation is based on this implementation: [Deep Deterministic Policy Gradients Explained](https://towardsdatascience.com/deep-deterministic-policy-gradients-explained-2d94655a9b7b).
