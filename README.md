@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This repository contains Pytorch implementation of paper ["Safe Exploration in Continuous Action Spaces" [Dalal et al.]](https://arxiv.org/pdf/1801.08757.pdf). 
+This repository contains Pytorch implementation of paper ["Safe Exploration in Continuous Action Spaces" (Dalal et al., 2018)](https://arxiv.org/pdf/1801.08757.pdf). 
 
 ## Setup
 
@@ -34,7 +34,7 @@ tensorboard --logdir=runs
 
 ## Domains
 
-The ball-ND and spaceship domain from [Dalal et al.] are implemented in custom [OpenAI gym](https://gym.openai.com/) environments (see ```safe-explorer/env```).
+The ball-ND and spaceship domain from (Dalal et al., 2018) are implemented in custom [OpenAI gym](https://gym.openai.com/) environments (see ```safe-explorer/env```).
 
 ### Ball-ND Domain
 
@@ -50,7 +50,7 @@ TODO
 
 ## Results
 
-I managed to get similiar results to [Dalal et al.].
+I managed to get similiar results to (Dalal et al., 2018).
 
 ![Results](images/results.png)
 
@@ -154,12 +154,12 @@ I managed to get similiar results to [Dalal et al.].
 ```
 
 ## References
-- Dalal, Gal, Krishnamurthy Dvijotham, Matej Vecerik, Todd Hester, Cosmin Paduraru, and Yuval Tassa (2018). “Safe Exploration in Continuous Action Spaces”. In: CoRR abs/1801.08757. arXiv: 1801.08757. url: http: //arxiv.org/abs/1801.08757.
+- Dalal, G., K. Dvijotham, M. Vecerik, T. Hester, C. Paduraru, and Y. Tassa (2018). “Safe Exploration in Continuous Action Spaces.” In: CoRR abs/1801.08757. arXiv: 1801.08757.
 
-- Lillicrap, Timothy P., Jonathan J. Hunt, Alexander Pritzel, Nicolas Manfred Otto Heess, Tom Erez, Yuval Tassa, David Silver, and Daan Wierstra (2016). “Continuous control with deep reinforcement learning”. In: CoRR abs/1509.02971.
+- Lillicrap, T. P., J. J. Hunt, A. Pritzel, N. Heess, T. Erez, Y. Tassa, D. Silver, and D. Wierstra (May 2016). “Continuous control with deep reinforcement learning.” In: 4th International Conference on Learning Representations, (ICLR 2016), Conference Track Proceedings. Ed. by Y. Bengio and Y. LeCun. ICLR’16. San Juan, Puerto Rico.
 
 ## Acknowledgements
 
 This repository was originally a fork from https://github.com/AgrawalAmey/safe-explorer. I have re-implemented most of the DDPG, Safety Layer, and domains, therefore I have detached the fork. Some parts concerning the structure of the repository are reminiscent from the original fork.
 
-The *Deep Determinitic Policy Gradient* (DDPG) [Lillicrap et al.] implementation is based on this implementation: [Deep Deterministic Policy Gradients Explained](https://towardsdatascience.com/deep-deterministic-policy-gradients-explained-2d94655a9b7b).
+The *Deep Determinitic Policy Gradient* (DDPG) (Lillicrap et al., 2016) implementation is based on this implementation: [Deep Deterministic Policy Gradients Explained](https://towardsdatascience.com/deep-deterministic-policy-gradients-explained-2d94655a9b7b).
